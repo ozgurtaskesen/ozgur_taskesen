@@ -300,7 +300,7 @@ function hideResults() {
   document.getElementById('checkerResults').classList.remove('active');
 }
 
-// ===== Essay Submission =====
+// ===== Essay Submission (with EmailJS) =====
 function submitEssay() {
   const text = document.getElementById('essayText').value.trim();
   const name = document.getElementById('studentName').value.trim();
@@ -329,8 +329,9 @@ function submitEssay() {
   }
 
   const words = text.split(/\s+/).filter(w => w.length > 0).length;
+  const submittedAt = new Date().toLocaleString();
 
-  // Save to local storage for rater review
+  // Save to local storage as backup
   const submissions = JSON.parse(localStorage.getItem('essaySubmissions') || '[]');
   const submission = {
     id: Date.now(),
@@ -344,16 +345,166 @@ function submitEssay() {
   submissions.push(submission);
   localStorage.setItem('essaySubmissions', JSON.stringify(submissions));
 
-  statusEl.className = 'submission-status success';
-  statusEl.innerHTML = `
-    <strong>Essay submitted successfully!</strong><br>
-    <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
-    <span style="font-size:0.85rem;">Your essay has been saved for rater review. Submission ID: #${submission.id}</span>
-  `;
+  // Check if EmailJS is configured
+  const config = getEmailConfig();
+  if (!config) {
+    statusEl.className = 'submission-status success';
+    statusEl.innerHTML = `
+      <strong>Essay saved locally.</strong><br>
+      <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
+      <span style="font-size:0.85rem; color: var(--warning);">Email delivery is not configured. Ask your teacher to set up email in the Settings page so your essay can be sent for review.</span>
+    `;
+    statusEl.style.display = 'block';
+    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  // Send via EmailJS
+  statusEl.className = 'submission-status';
+  statusEl.innerHTML = '<span style="color: var(--gray-500);">Sending your essay to the rater...</span>';
   statusEl.style.display = 'block';
 
-  // Scroll to status
+  const templateParams = {
+    student_name: name,
+    topic: topic,
+    essay: text,
+    word_count: String(words),
+    submitted_at: submittedAt,
+    to_email: config.raterEmail
+  };
+
+  emailjs.send(config.serviceId, config.templateId, templateParams)
+    .then(function() {
+      statusEl.className = 'submission-status success';
+      statusEl.innerHTML = `
+        <strong>Essay submitted and emailed successfully!</strong><br>
+        <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
+        <span style="font-size:0.85rem;">Your essay has been sent to your teacher for review.</span>
+      `;
+    })
+    .catch(function(error) {
+      console.error('EmailJS error:', error);
+      statusEl.className = 'submission-status error';
+      statusEl.innerHTML = `
+        <strong>Essay saved locally, but email delivery failed.</strong><br>
+        <span style="font-size:0.85rem;">Error: ${escapeHtml(error.text || 'Could not connect to email service')}.</span><br>
+        <span style="font-size:0.85rem;">Your essay is saved with ID #${submission.id}. Please ask your teacher to check the email settings.</span>
+      `;
+    });
+
   statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== EmailJS Settings =====
+function getEmailConfig() {
+  const publicKey = localStorage.getItem('emailjs_publicKey');
+  const serviceId = localStorage.getItem('emailjs_serviceId');
+  const templateId = localStorage.getItem('emailjs_templateId');
+  const raterEmail = localStorage.getItem('emailjs_raterEmail');
+
+  if (publicKey && serviceId && templateId) {
+    return { publicKey, serviceId, templateId, raterEmail: raterEmail || '' };
+  }
+  return null;
+}
+
+function saveEmailSettings() {
+  const publicKey = document.getElementById('emailjsPublicKey').value.trim();
+  const serviceId = document.getElementById('emailjsServiceId').value.trim();
+  const templateId = document.getElementById('emailjsTemplateId').value.trim();
+  const raterEmail = document.getElementById('raterEmail').value.trim();
+  const statusEl = document.getElementById('settingsStatus');
+
+  if (!publicKey || !serviceId || !templateId) {
+    statusEl.className = 'submission-status error';
+    statusEl.textContent = 'Please fill in the Public Key, Service ID, and Template ID.';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  localStorage.setItem('emailjs_publicKey', publicKey);
+  localStorage.setItem('emailjs_serviceId', serviceId);
+  localStorage.setItem('emailjs_templateId', templateId);
+  localStorage.setItem('emailjs_raterEmail', raterEmail);
+
+  // Initialise EmailJS with the public key
+  emailjs.init(publicKey);
+
+  statusEl.className = 'submission-status success';
+  statusEl.textContent = 'Settings saved successfully! Student essays will now be emailed to you when submitted.';
+  statusEl.style.display = 'block';
+
+  updateEmailConfigStatus();
+}
+
+function testEmailSettings() {
+  const config = getEmailConfig();
+  const statusEl = document.getElementById('settingsStatus');
+
+  if (!config) {
+    statusEl.className = 'submission-status error';
+    statusEl.textContent = 'Please save your settings first before testing.';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  statusEl.className = 'submission-status';
+  statusEl.innerHTML = '<span style="color: var(--gray-500);">Sending test email...</span>';
+  statusEl.style.display = 'block';
+
+  const testParams = {
+    student_name: 'Test Student',
+    topic: 'Test Submission - Email Configuration',
+    essay: 'This is a test email to confirm that essay submissions are working correctly. If you receive this message, your EmailJS configuration is set up properly.',
+    word_count: '25',
+    submitted_at: new Date().toLocaleString(),
+    to_email: config.raterEmail
+  };
+
+  emailjs.send(config.serviceId, config.templateId, testParams)
+    .then(function() {
+      statusEl.className = 'submission-status success';
+      statusEl.textContent = 'Test email sent successfully! Check your inbox (and spam folder) to confirm delivery.';
+    })
+    .catch(function(error) {
+      console.error('Test email error:', error);
+      statusEl.className = 'submission-status error';
+      statusEl.innerHTML = `
+        <strong>Test email failed.</strong><br>
+        <span style="font-size:0.85rem;">Error: ${escapeHtml(error.text || 'Could not connect to email service')}. Please double-check your Service ID, Template ID, and Public Key.</span>
+      `;
+    });
+}
+
+function updateEmailConfigStatus() {
+  const statusEl = document.getElementById('emailConfigStatus');
+  if (!statusEl) return;
+
+  const config = getEmailConfig();
+  if (config) {
+    statusEl.innerHTML = `
+      <span style="color: var(--success); font-weight: 600;">&#10003; Email configured</span><br>
+      Service: <code>${escapeHtml(config.serviceId)}</code> |
+      Template: <code>${escapeHtml(config.templateId)}</code>
+      ${config.raterEmail ? '<br>Sending to: <code>' + escapeHtml(config.raterEmail) + '</code>' : ''}
+    `;
+  } else {
+    statusEl.innerHTML = '<span style="color: var(--warning); font-weight: 600;">&#9888; Not configured</span> &mdash; Student submissions will be saved locally only.';
+  }
+}
+
+function loadEmailSettings() {
+  const config = getEmailConfig();
+  if (config) {
+    document.getElementById('emailjsPublicKey').value = config.publicKey;
+    document.getElementById('emailjsServiceId').value = config.serviceId;
+    document.getElementById('emailjsTemplateId').value = config.templateId;
+    document.getElementById('raterEmail').value = config.raterEmail;
+
+    // Initialise EmailJS
+    emailjs.init(config.publicKey);
+  }
+  updateEmailConfigStatus();
 }
 
 // ===== Loading Overlay =====
@@ -381,6 +532,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Set up word counter
   updateWordCount();
+
+  // Load email settings
+  loadEmailSettings();
 
   // Handle URL hash navigation
   const hash = window.location.hash.replace('#', '');
