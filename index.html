@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEFR B1+ Opinion Essay Writing Platform</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== Navigation ===== -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="#" class="navbar-brand" onclick="navigateTo('home')">
+        EssayBuilder <span class="badge">B1+</span>
+      </a>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home" class="active" data-page="home" onclick="navigateTo('home')">Home</a></li>
+        <li><a href="#essays" data-page="essays" onclick="navigateTo('essays')">Model Essays</a></li>
+        <li><a href="#toolkit" data-page="toolkit" onclick="navigateTo('toolkit')">Language Toolkit</a></li>
+        <li><a href="#organisation" data-page="organisation" onclick="navigateTo('organisation')">Organisation</a></li>
+        <li><a href="#write" data-page="write" onclick="navigateTo('write')">Write &amp; Submit</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main>
+
+    <!-- ===== HOME PAGE ===== -->
+    <section id="home" class="page-section active">
+      <div class="hero">
+        <h1>Master Opinion Essay Writing</h1>
+        <p>A comprehensive platform for CEFR B1+ learners to study, practise, and perfect their opinion essay writing skills with AI-powered feedback.</p>
+        <div class="hero-features">
+          <div class="hero-feature">
+            <div class="icon">&#128214;</div>
+            <h3>Model Essays</h3>
+            <p>Study well-structured opinion essays at ~300 words</p>
+          </div>
+          <div class="hero-feature">
+            <div class="icon">&#128295;</div>
+            <h3>Language Toolkit</h3>
+            <p>Linkers and phrases for 4 key relationship types</p>
+          </div>
+          <div class="hero-feature">
+            <div class="icon">&#128202;</div>
+            <h3>Organisation Guide</h3>
+            <p>Learn acceptable essay structures and conventions</p>
+          </div>
+          <div class="hero-feature">
+            <div class="icon">&#9997;</div>
+            <h3>Write &amp; Get Feedback</h3>
+            <p>Submit essays and receive AI-powered analysis and grading</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Follow these steps to improve your opinion essay writing.</p>
+      </div>
+
+      <div class="org-grid">
+        <div class="card">
+          <div class="card-header"><h3>Step 1: Study</h3></div>
+          <div class="card-body">
+            <p>Read the <strong>Model Essays</strong> to see how a well-written opinion essay is structured. Notice the introduction, body paragraphs, and conclusion.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Step 2: Learn the Language</h3></div>
+          <div class="card-body">
+            <p>Explore the <strong>Language Toolkit</strong> for useful linkers, phrases, and functional language organised by four relationship types.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Step 3: Understand Organisation</h3></div>
+          <div class="card-body">
+            <p>Review the <strong>Organisation Guide</strong> to learn how to arrange your ideas effectively in each paragraph of your essay.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Step 4: Write &amp; Submit</h3></div>
+          <div class="card-body">
+            <p>Go to the <strong>Write &amp; Submit</strong> section, choose a topic, write your essay, and submit it for AI checking and rater review.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODEL ESSAYS PAGE ===== -->
+    <section id="essays" class="page-section">
+      <div class="section-header">
+        <h2>Model Opinion Essays</h2>
+        <p>Study these well-structured opinion essays. Each essay follows the 4-paragraph format: introduction, two body paragraphs, and conclusion (~300 words).</p>
+      </div>
+
+      <div class="toolkit-tabs">
+        <button class="toolkit-tab active" onclick="filterEssays('all')">All Essays</button>
+        <button class="toolkit-tab" onclick="filterEssays('advantage-disadvantage')">Advantage &amp; Disadvantage</button>
+        <button class="toolkit-tab" onclick="filterEssays('problem-solution')">Problem &amp; Solution</button>
+        <button class="toolkit-tab" onclick="filterEssays('cause-effect')">Cause &amp; Effect</button>
+        <button class="toolkit-tab" onclick="filterEssays('compare-contrast')">Compare &amp; Contrast</button>
+      </div>
+
+      <div class="essay-grid" id="essayGrid">
+        <!-- Essays are populated by JavaScript -->
+      </div>
+    </section>
+
+    <!-- ===== LANGUAGE TOOLKIT PAGE ===== -->
+    <section id="toolkit" class="page-section">
+      <div class="section-header">
+        <h2>Language Toolkit</h2>
+        <p>Explore functional language, linkers, and useful phrases organised by the four relationship types commonly used in opinion essays.</p>
+      </div>
+
+      <div class="toolkit-tabs">
+        <button class="toolkit-tab active" data-toolkit="adv-dis" onclick="switchToolkit('adv-dis')">Advantage &amp; Disadvantage</button>
+        <button class="toolkit-tab" data-toolkit="prob-sol" onclick="switchToolkit('prob-sol')">Problem &amp; Solution</button>
+        <button class="toolkit-tab" data-toolkit="cause-eff" onclick="switchToolkit('cause-eff')">Cause &amp; Effect</button>
+        <button class="toolkit-tab" data-toolkit="comp-con" onclick="switchToolkit('comp-con')">Compare &amp; Contrast</button>
+      </div>
+
+      <!-- Advantage & Disadvantage -->
+      <div class="toolkit-content active" id="toolkit-adv-dis">
+        <div class="card">
+          <div class="card-header">
+            <h3>Advantage &amp; Disadvantage Language</h3>
+            <div class="subtitle">Phrases and linkers for discussing benefits and drawbacks</div>
+          </div>
+          <div class="card-body">
+            <div class="phrase-category">
+              <h4>Introducing Advantages</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">One of the main advantages is that...</span>
+                <span class="phrase-chip">A major benefit of... is...</span>
+                <span class="phrase-chip">The most significant advantage is...</span>
+                <span class="phrase-chip">One positive aspect is that...</span>
+                <span class="phrase-chip">Perhaps the greatest advantage is...</span>
+              </div>
+              <div class="example-sentence">e.g. "One of the main advantages of studying abroad is that students can experience different cultures."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Introducing Disadvantages</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">On the other hand, a key disadvantage is...</span>
+                <span class="phrase-chip">However, the main drawback is that...</span>
+                <span class="phrase-chip">One notable disadvantage is...</span>
+                <span class="phrase-chip">A significant downside is that...</span>
+                <span class="phrase-chip">Nevertheless, a major drawback is...</span>
+              </div>
+              <div class="example-sentence">e.g. "However, the main drawback of online learning is that students may feel isolated."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Balancing Both Sides</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">While it is true that..., it is also important to consider...</span>
+                <span class="phrase-chip">Although there are benefits, there are also drawbacks.</span>
+                <span class="phrase-chip">Despite the advantages, we must also consider...</span>
+                <span class="phrase-chip">On balance, the advantages outweigh the disadvantages.</span>
+                <span class="phrase-chip">Even though... , it should be noted that...</span>
+              </div>
+            </div>
+            <div class="phrase-category">
+              <h4>Useful Linkers</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Furthermore</span>
+                <span class="phrase-chip">Moreover</span>
+                <span class="phrase-chip">In addition</span>
+                <span class="phrase-chip">However</span>
+                <span class="phrase-chip">On the other hand</span>
+                <span class="phrase-chip">Nevertheless</span>
+                <span class="phrase-chip">Conversely</span>
+                <span class="phrase-chip">Whereas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="toolkit-content" id="toolkit-prob-sol">
+        <div class="card">
+          <div class="card-header">
+            <h3>Problem &amp; Solution Language</h3>
+            <div class="subtitle">Phrases and linkers for identifying issues and proposing solutions</div>
+          </div>
+          <div class="card-body">
+            <div class="phrase-category">
+              <h4>Describing Problems</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">One of the most serious problems is...</span>
+                <span class="phrase-chip">A major issue facing... is...</span>
+                <span class="phrase-chip">A growing concern is that...</span>
+                <span class="phrase-chip">One of the biggest challenges is...</span>
+                <span class="phrase-chip">An increasingly common problem is...</span>
+              </div>
+              <div class="example-sentence">e.g. "One of the most serious problems in large cities is air pollution caused by heavy traffic."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Proposing Solutions</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">One possible solution would be to...</span>
+                <span class="phrase-chip">This problem could be solved by...</span>
+                <span class="phrase-chip">An effective way to address this is...</span>
+                <span class="phrase-chip">The government could tackle this by...</span>
+                <span class="phrase-chip">A practical solution would be to...</span>
+              </div>
+              <div class="example-sentence">e.g. "One possible solution would be to invest more in public transport systems."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Evaluating Solutions</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">This approach would be effective because...</span>
+                <span class="phrase-chip">If this solution were implemented,...</span>
+                <span class="phrase-chip">This would help to reduce / improve...</span>
+                <span class="phrase-chip">As a result of this measure,...</span>
+              </div>
+            </div>
+            <div class="phrase-category">
+              <h4>Useful Linkers</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Therefore</span>
+                <span class="phrase-chip">As a result</span>
+                <span class="phrase-chip">Consequently</span>
+                <span class="phrase-chip">For this reason</span>
+                <span class="phrase-chip">In order to</span>
+                <span class="phrase-chip">Thus</span>
+                <span class="phrase-chip">Hence</span>
+                <span class="phrase-chip">Accordingly</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cause & Effect -->
+      <div class="toolkit-content" id="toolkit-cause-eff">
+        <div class="card">
+          <div class="card-header">
+            <h3>Cause &amp; Effect Language</h3>
+            <div class="subtitle">Phrases and linkers for explaining reasons and consequences</div>
+          </div>
+          <div class="card-body">
+            <div class="phrase-category">
+              <h4>Introducing Causes</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">One of the main reasons for... is...</span>
+                <span class="phrase-chip">This is mainly due to...</span>
+                <span class="phrase-chip">The primary cause of... is...</span>
+                <span class="phrase-chip">This situation arises because...</span>
+                <span class="phrase-chip">A key factor contributing to... is...</span>
+              </div>
+              <div class="example-sentence">e.g. "One of the main reasons for the rise in obesity is the popularity of fast food."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Describing Effects</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">As a result, ...</span>
+                <span class="phrase-chip">This leads to / results in...</span>
+                <span class="phrase-chip">One consequence of this is...</span>
+                <span class="phrase-chip">This has a significant impact on...</span>
+                <span class="phrase-chip">The effect of... is that...</span>
+              </div>
+              <div class="example-sentence">e.g. "As a result, more young people are suffering from health problems at an earlier age."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Linking Cause and Effect</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Because of this,...</span>
+                <span class="phrase-chip">Due to the fact that...</span>
+                <span class="phrase-chip">Since / As...</span>
+                <span class="phrase-chip">Owing to...</span>
+                <span class="phrase-chip">This means that...</span>
+              </div>
+            </div>
+            <div class="phrase-category">
+              <h4>Useful Linkers</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Therefore</span>
+                <span class="phrase-chip">Consequently</span>
+                <span class="phrase-chip">As a consequence</span>
+                <span class="phrase-chip">Thus</span>
+                <span class="phrase-chip">Hence</span>
+                <span class="phrase-chip">For this reason</span>
+                <span class="phrase-chip">As a result</span>
+                <span class="phrase-chip">Because of</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare & Contrast -->
+      <div class="toolkit-content" id="toolkit-comp-con">
+        <div class="card">
+          <div class="card-header">
+            <h3>Compare &amp; Contrast Language</h3>
+            <div class="subtitle">Phrases and linkers for drawing similarities and differences</div>
+          </div>
+          <div class="card-body">
+            <div class="phrase-category">
+              <h4>Showing Similarities</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Similarly,...</span>
+                <span class="phrase-chip">In the same way,...</span>
+                <span class="phrase-chip">Like..., ... also...</span>
+                <span class="phrase-chip">Both... and... share the characteristic of...</span>
+                <span class="phrase-chip">One thing they have in common is...</span>
+              </div>
+              <div class="example-sentence">e.g. "Similarly, both traditional and online education aim to provide students with valuable knowledge."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Showing Differences</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">In contrast,...</span>
+                <span class="phrase-chip">Unlike..., ...</span>
+                <span class="phrase-chip">While / Whereas...</span>
+                <span class="phrase-chip">On the other hand,...</span>
+                <span class="phrase-chip">... differs from... in that...</span>
+              </div>
+              <div class="example-sentence">e.g. "In contrast, online learning offers more flexibility but less social interaction."</div>
+            </div>
+            <div class="phrase-category">
+              <h4>Making Comparisons</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">Compared to / with...</span>
+                <span class="phrase-chip">...is more/less... than...</span>
+                <span class="phrase-chip">...is not as... as...</span>
+                <span class="phrase-chip">The main difference between... and... is...</span>
+              </div>
+            </div>
+            <div class="phrase-category">
+              <h4>Useful Linkers</h4>
+              <div class="phrase-list">
+                <span class="phrase-chip">However</span>
+                <span class="phrase-chip">On the contrary</span>
+                <span class="phrase-chip">Whereas</span>
+                <span class="phrase-chip">While</span>
+                <span class="phrase-chip">Similarly</span>
+                <span class="phrase-chip">Likewise</span>
+                <span class="phrase-chip">In contrast</span>
+                <span class="phrase-chip">Alternatively</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ORGANISATION GUIDE PAGE ===== -->
+    <section id="organisation" class="page-section">
+      <div class="section-header">
+        <h2>Essay Organisation Guide</h2>
+        <p>Learn how to organise your opinion essay effectively. A well-organised essay follows a clear 4-paragraph structure.</p>
+      </div>
+
+      <!-- General Structure -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+          <h3>General 4-Paragraph Opinion Essay Structure</h3>
+          <div class="subtitle">This structure applies to all opinion essays at B1+ level</div>
+        </div>
+        <div class="card-body">
+          <div class="org-diagram">
+            <div class="org-step">
+              <div class="org-step-number">1</div>
+              <div class="org-step-content">
+                <h5>Introduction (Paragraph 1)</h5>
+                <p>Begin with a general statement or hook about the topic. Provide brief background information. End with a clear thesis statement that presents your opinion or outlines what the essay will discuss. Do NOT include arguments here.</p>
+              </div>
+            </div>
+            <div class="org-connector"></div>
+            <div class="org-step">
+              <div class="org-step-number">2</div>
+              <div class="org-step-content">
+                <h5>Body Paragraph 1 (Paragraph 2)</h5>
+                <p>Start with a clear topic sentence introducing your first main point. Support it with explanations, examples, or evidence. Use linkers to connect your ideas. End with a sentence that links to the next paragraph or reinforces your point.</p>
+              </div>
+            </div>
+            <div class="org-connector"></div>
+            <div class="org-step">
+              <div class="org-step-number">3</div>
+              <div class="org-step-content">
+                <h5>Body Paragraph 2 (Paragraph 3)</h5>
+                <p>Start with a topic sentence for your second main point (or the opposing view). Develop it with supporting details and examples. Use appropriate transition language. Connect back to your overall argument.</p>
+              </div>
+            </div>
+            <div class="org-connector"></div>
+            <div class="org-step">
+              <div class="org-step-number">4</div>
+              <div class="org-step-content">
+                <h5>Conclusion (Paragraph 4)</h5>
+                <p>Restate your opinion using different words. Briefly summarise your main points. End with a final thought, recommendation, or a look to the future. Do NOT introduce new arguments here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>Organisation by Relationship Type</h2>
+        <p>Each essay type has its own recommended way of organising body paragraphs.</p>
+      </div>
+
+      <div class="org-grid">
+        <!-- Advantage-Disadvantage Organisation -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Advantage &amp; Disadvantage</h3>
+            <div class="subtitle">Block or point-by-point organisation</div>
+          </div>
+          <div class="card-body">
+            <div class="org-diagram">
+              <div class="org-step">
+                <div class="org-step-number">1</div>
+                <div class="org-step-content">
+                  <h5>Introduction</h5>
+                  <p>Introduce the topic and state that there are both advantages and disadvantages to consider.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">2</div>
+                <div class="org-step-content">
+                  <h5>Body 1: Advantages</h5>
+                  <p>Present 2-3 key advantages with supporting explanations and examples.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">3</div>
+                <div class="org-step-content">
+                  <h5>Body 2: Disadvantages</h5>
+                  <p>Discuss 2-3 key disadvantages with supporting explanations and examples.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">4</div>
+                <div class="org-step-content">
+                  <h5>Conclusion</h5>
+                  <p>Summarise and give your overall opinion: do advantages outweigh disadvantages, or vice versa?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problem-Solution Organisation -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Problem &amp; Solution</h3>
+            <div class="subtitle">Describe problems, then propose solutions</div>
+          </div>
+          <div class="card-body">
+            <div class="org-diagram">
+              <div class="org-step">
+                <div class="org-step-number">1</div>
+                <div class="org-step-content">
+                  <h5>Introduction</h5>
+                  <p>Introduce the issue and signal that problems and solutions will be discussed.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">2</div>
+                <div class="org-step-content">
+                  <h5>Body 1: Problems</h5>
+                  <p>Describe 2-3 significant problems related to the topic, with concrete details.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">3</div>
+                <div class="org-step-content">
+                  <h5>Body 2: Solutions</h5>
+                  <p>Propose practical solutions for each problem mentioned. Explain how they would work.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">4</div>
+                <div class="org-step-content">
+                  <h5>Conclusion</h5>
+                  <p>Restate the importance of addressing the problems and the effectiveness of the proposed solutions.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cause-Effect Organisation -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Cause &amp; Effect</h3>
+            <div class="subtitle">Explain why something happens and what results</div>
+          </div>
+          <div class="card-body">
+            <div class="org-diagram">
+              <div class="org-step">
+                <div class="org-step-number">1</div>
+                <div class="org-step-content">
+                  <h5>Introduction</h5>
+                  <p>Introduce the phenomenon or situation. Indicate that causes and effects will be explored.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">2</div>
+                <div class="org-step-content">
+                  <h5>Body 1: Causes</h5>
+                  <p>Explain 2-3 key causes or reasons behind the situation with evidence or examples.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">3</div>
+                <div class="org-step-content">
+                  <h5>Body 2: Effects</h5>
+                  <p>Discuss the consequences or impacts that result from the causes identified.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">4</div>
+                <div class="org-step-content">
+                  <h5>Conclusion</h5>
+                  <p>Summarise the cause-effect chain and offer your opinion or prediction for the future.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compare-Contrast Organisation -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Compare &amp; Contrast</h3>
+            <div class="subtitle">Examine similarities and differences</div>
+          </div>
+          <div class="card-body">
+            <div class="org-diagram">
+              <div class="org-step">
+                <div class="org-step-number">1</div>
+                <div class="org-step-content">
+                  <h5>Introduction</h5>
+                  <p>Introduce the two subjects being compared. State the purpose of the comparison.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">2</div>
+                <div class="org-step-content">
+                  <h5>Body 1: Similarities (or Subject A)</h5>
+                  <p>Discuss key similarities between the two subjects, or describe one subject in detail.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">3</div>
+                <div class="org-step-content">
+                  <h5>Body 2: Differences (or Subject B)</h5>
+                  <p>Discuss the key differences, or describe the second subject and highlight contrasts.</p>
+                </div>
+              </div>
+              <div class="org-connector"></div>
+              <div class="org-step">
+                <div class="org-step-number">4</div>
+                <div class="org-step-content">
+                  <h5>Conclusion</h5>
+                  <p>Summarise the comparison and state which option you prefer or recommend, with justification.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips Section -->
+      <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+          <h3>Key Tips for Good Organisation</h3>
+        </div>
+        <div class="card-body">
+          <ul style="padding-left: 1.25rem; color: var(--gray-600); line-height: 1.8;">
+            <li><strong>One main idea per paragraph:</strong> Each body paragraph should focus on a single main point.</li>
+            <li><strong>Topic sentences:</strong> Start each body paragraph with a clear topic sentence that tells the reader what the paragraph is about.</li>
+            <li><strong>Supporting details:</strong> Follow your topic sentence with explanations, examples, or evidence.</li>
+            <li><strong>Linkers and transitions:</strong> Use appropriate connecting words to link ideas within and between paragraphs.</li>
+            <li><strong>No new ideas in the conclusion:</strong> The conclusion should summarise, not introduce new arguments.</li>
+            <li><strong>Balanced paragraphs:</strong> Try to keep your body paragraphs roughly similar in length.</li>
+            <li><strong>Aim for ~300 words:</strong> A well-developed B1+ essay is typically around 280-320 words.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== WRITE & SUBMIT PAGE ===== -->
+    <section id="write" class="page-section">
+      <div class="section-header">
+        <h2>Write &amp; Submit Your Essay</h2>
+        <p>Choose a topic, write your opinion essay in 4 paragraphs (~300 words), then submit for AI checking and rater review.</p>
+      </div>
+
+      <div class="writing-container">
+        <!-- Left: Writing Area -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Your Essay</h3>
+            </div>
+            <div class="card-body">
+              <div class="topic-selector">
+                <label for="essayTopic">Select a topic or write your own:</label>
+                <select id="essayTopic" onchange="handleTopicChange()">
+                  <option value="">-- Choose a topic --</option>
+                  <option value="custom">Write my own topic...</option>
+                  <option value="topic1">Should students wear uniforms at school?</option>
+                  <option value="topic2">Is social media more harmful than helpful for teenagers?</option>
+                  <option value="topic3">Should governments invest more in public transport?</option>
+                  <option value="topic4">Is it better to live in a city or in the countryside?</option>
+                  <option value="topic5">Should homework be banned in schools?</option>
+                  <option value="topic6">Do the advantages of technology in education outweigh the disadvantages?</option>
+                  <option value="topic7">What are the main causes and effects of air pollution in cities?</option>
+                  <option value="topic8">How does online learning compare to traditional classroom learning?</option>
+                </select>
+              </div>
+
+              <div id="customTopicInput" style="display:none; margin-bottom: 1rem;">
+                <input type="text" id="customTopic" placeholder="Type your essay topic here..."
+                  style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem;">
+              </div>
+
+              <div id="studentNameInput" style="margin-bottom: 1rem;">
+                <label for="studentName" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.5rem;">Your Name (for rater submission):</label>
+                <input type="text" id="studentName" placeholder="Enter your name..."
+                  style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem;">
+              </div>
+
+              <textarea class="essay-textarea" id="essayText"
+                placeholder="Write your opinion essay here...&#10;&#10;Paragraph 1 (Introduction): Start with a general statement about the topic and end with your thesis.&#10;&#10;Paragraph 2 (Body 1): Present your first main argument with supporting details.&#10;&#10;Paragraph 3 (Body 2): Present your second main argument or the opposing view.&#10;&#10;Paragraph 4 (Conclusion): Summarise your main points and restate your opinion."
+                oninput="updateWordCount()"></textarea>
+
+              <div class="writing-toolbar">
+                <span class="word-counter" id="wordCounter">0 words</span>
+                <div class="btn-group">
+                  <button class="btn btn-secondary" onclick="clearEssay()">Clear</button>
+                  <button class="btn btn-primary" onclick="checkEssay()" id="checkBtn">Check with AI</button>
+                  <button class="btn btn-success" onclick="submitEssay()" id="submitBtn">Submit for Review</button>
+                </div>
+              </div>
+
+              <div class="submission-status" id="submissionStatus"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Quick Reference & Results -->
+        <div class="writing-panel">
+          <div class="quick-ref" id="quickRef">
+            <h4>Quick Reference</h4>
+            <div class="quick-ref-section">
+              <h5>Essay Structure</h5>
+              <p>4 paragraphs: Introduction, Body 1, Body 2, Conclusion</p>
+            </div>
+            <div class="quick-ref-section">
+              <h5>Target Length</h5>
+              <p>Approximately 300 words (280-320 recommended)</p>
+            </div>
+            <div class="quick-ref-section">
+              <h5>Introduction</h5>
+              <p>General statement + background + thesis statement</p>
+            </div>
+            <div class="quick-ref-section">
+              <h5>Body Paragraphs</h5>
+              <p>Topic sentence + supporting details + examples + linking</p>
+            </div>
+            <div class="quick-ref-section">
+              <h5>Conclusion</h5>
+              <p>Restate opinion + summarise points + final thought</p>
+            </div>
+            <div class="quick-ref-section">
+              <h5>Grading Criteria (out of 20)</h5>
+              <p>Content: 5 | Organisation: 5 | Grammar: 5 | Vocabulary: 5</p>
+            </div>
+          </div>
+
+          <!-- AI Checker Results (shown after checking) -->
+          <div class="checker-results" id="checkerResults">
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h3>AI Analysis Results</h3>
+              </div>
+              <div class="card-body">
+                <!-- Score Circle -->
+                <div id="scoreCircle" class="score-circle score-mid">
+                  <span class="score-value" id="totalScore">0</span>
+                  <span class="score-total">/ 20</span>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="score-breakdown">
+                  <div class="score-item">
+                    <div class="label">Content</div>
+                    <div class="value" id="contentScore">0</div>
+                    <div class="max">/ 5</div>
+                  </div>
+                  <div class="score-item">
+                    <div class="label">Organisation</div>
+                    <div class="value" id="orgScore">0</div>
+                    <div class="max">/ 5</div>
+                  </div>
+                  <div class="score-item">
+                    <div class="label">Grammar</div>
+                    <div class="value" id="grammarScore">0</div>
+                    <div class="max">/ 5</div>
+                  </div>
+                  <div class="score-item">
+                    <div class="label">Vocabulary</div>
+                    <div class="value" id="vocabScore">0</div>
+                    <div class="max">/ 5</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Corrected Essay -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h3>Corrected Essay</h3>
+                <div class="subtitle"><span style="color:var(--danger); font-weight:600;">Red text</span> = language errors | <span style="color:var(--danger); background:#fef2f2; padding: 1px 4px; border-radius: 3px;">Red background</span> = organisation/content issues</div>
+              </div>
+              <div class="card-body">
+                <div class="corrected-essay" id="correctedEssay"></div>
+              </div>
+            </div>
+
+            <!-- Detailed Feedback -->
+            <div class="feedback-grid" id="feedbackGrid">
+              <div class="card feedback-card content-fb">
+                <div class="card-header">
+                  <h3>Content</h3>
+                  <span class="score-badge" id="contentBadge">0/5</span>
+                </div>
+                <div class="card-body" id="contentFeedback"></div>
+              </div>
+              <div class="card feedback-card org-fb">
+                <div class="card-header">
+                  <h3>Organisation</h3>
+                  <span class="score-badge" id="orgBadge">0/5</span>
+                </div>
+                <div class="card-body" id="orgFeedback"></div>
+              </div>
+              <div class="card feedback-card grammar-fb">
+                <div class="card-header">
+                  <h3>Grammar</h3>
+                  <span class="score-badge" id="grammarBadge">0/5</span>
+                </div>
+                <div class="card-body" id="grammarFeedback"></div>
+              </div>
+              <div class="card feedback-card vocab-fb">
+                <div class="card-header">
+                  <h3>Vocabulary</h3>
+                  <span class="score-badge" id="vocabBadge">0/5</span>
+                </div>
+                <div class="card-body" id="vocabFeedback"></div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 1rem;">
+              <button class="btn btn-secondary" onclick="hideResults()">Write Another Essay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Essay Modal ===== -->
+  <div class="modal-overlay" id="essayModal" onclick="closeModalOverlay(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Essay Title</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== Loading Overlay ===== -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Analysing your essay...</div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <p>CEFR B1+ Opinion Essay Writing Platform &mdash; Designed for English language learners</p>
+  </footer>
+
+  <script src="js/essays-data.js"></script>
+  <script src="js/ai-checker.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
