@@ -300,7 +300,7 @@ function hideResults() {
   document.getElementById('checkerResults').classList.remove('active');
 }
 
-// ===== Essay Submission (with EmailJS) =====
+// ===== Essay Submission (via Google Form) =====
 function submitEssay() {
   const text = document.getElementById('essayText').value.trim();
   const name = document.getElementById('studentName').value.trim();
@@ -329,182 +329,99 @@ function submitEssay() {
   }
 
   const words = text.split(/\s+/).filter(w => w.length > 0).length;
-  const submittedAt = new Date().toLocaleString();
 
-  // Save to local storage as backup
-  const submissions = JSON.parse(localStorage.getItem('essaySubmissions') || '[]');
-  const submission = {
-    id: Date.now(),
-    studentName: name,
-    topic: topic,
-    essay: text,
-    wordCount: words,
-    submittedAt: new Date().toISOString(),
-    status: 'pending_review'
-  };
-  submissions.push(submission);
-  localStorage.setItem('essaySubmissions', JSON.stringify(submissions));
-
-  // Check if EmailJS is configured
-  const config = getEmailConfig();
-  if (!config) {
-    statusEl.className = 'submission-status success';
+  // Check if Google Form is configured
+  const formUrl = localStorage.getItem('googleFormUrl');
+  if (!formUrl) {
+    statusEl.className = 'submission-status error';
     statusEl.innerHTML = `
-      <strong>Essay saved locally.</strong><br>
-      <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
-      <span style="font-size:0.85rem; color: var(--warning);">Email delivery is not configured. Ask your teacher to set up email in the Settings page so your essay can be sent for review.</span>
+      <strong>Submission not available yet.</strong><br>
+      <span style="font-size:0.85rem;">Your teacher has not set up the submission form. Please ask them to configure it in the <a href="#" onclick="navigateTo('settings'); return false;" style="color:var(--primary); text-decoration:underline;">Settings</a> page.</span>
     `;
     statusEl.style.display = 'block';
     statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
 
-  // Send via EmailJS
-  statusEl.className = 'submission-status';
-  statusEl.innerHTML = '<span style="color: var(--gray-500);">Sending your essay to the rater...</span>';
+  // Build the pre-filled Google Form URL
+  // Google Forms pre-fill uses: viewform?usp=pp_url&entry.FIELD_ID=VALUE
+  // We use a simpler approach: open the form and copy essay to clipboard
+  try {
+    navigator.clipboard.writeText(text);
+  } catch (e) {
+    // Clipboard may not be available; that's fine
+  }
+
+  // Open Google Form in a new tab
+  window.open(formUrl, '_blank');
+
+  statusEl.className = 'submission-status success';
+  statusEl.innerHTML = `
+    <strong>Google Form opened in a new tab!</strong><br>
+    <span style="font-size:0.85rem;">Your essay has been copied to your clipboard. Paste it into the form and click Submit.</span><br>
+    <span style="font-size:0.85rem; color: var(--gray-500);">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span>
+  `;
   statusEl.style.display = 'block';
-
-  const templateParams = {
-    student_name: name,
-    topic: topic,
-    essay: text,
-    word_count: String(words),
-    submitted_at: submittedAt,
-    to_email: config.raterEmail
-  };
-
-  emailjs.send(config.serviceId, config.templateId, templateParams)
-    .then(function() {
-      statusEl.className = 'submission-status success';
-      statusEl.innerHTML = `
-        <strong>Essay submitted and emailed successfully!</strong><br>
-        <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
-        <span style="font-size:0.85rem;">Your essay has been sent to your teacher for review.</span>
-      `;
-    })
-    .catch(function(error) {
-      console.error('EmailJS error:', error);
-      statusEl.className = 'submission-status error';
-      statusEl.innerHTML = `
-        <strong>Essay saved locally, but email delivery failed.</strong><br>
-        <span style="font-size:0.85rem;">Error: ${escapeHtml(error.text || 'Could not connect to email service')}.</span><br>
-        <span style="font-size:0.85rem;">Your essay is saved with ID #${submission.id}. Please ask your teacher to check the email settings.</span>
-      `;
-    });
-
   statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ===== EmailJS Settings =====
-function getEmailConfig() {
-  const publicKey = localStorage.getItem('emailjs_publicKey');
-  const serviceId = localStorage.getItem('emailjs_serviceId');
-  const templateId = localStorage.getItem('emailjs_templateId');
-  const raterEmail = localStorage.getItem('emailjs_raterEmail');
-
-  if (publicKey && serviceId && templateId) {
-    return { publicKey, serviceId, templateId, raterEmail: raterEmail || '' };
-  }
-  return null;
-}
-
-function saveEmailSettings() {
-  const publicKey = document.getElementById('emailjsPublicKey').value.trim();
-  const serviceId = document.getElementById('emailjsServiceId').value.trim();
-  const templateId = document.getElementById('emailjsTemplateId').value.trim();
-  const raterEmail = document.getElementById('raterEmail').value.trim();
+// ===== Google Form Settings =====
+function saveGoogleFormSettings() {
+  const url = document.getElementById('googleFormUrl').value.trim();
   const statusEl = document.getElementById('settingsStatus');
 
-  if (!publicKey || !serviceId || !templateId) {
+  if (!url) {
     statusEl.className = 'submission-status error';
-    statusEl.textContent = 'Please fill in the Public Key, Service ID, and Template ID.';
+    statusEl.textContent = 'Please enter a Google Form URL.';
     statusEl.style.display = 'block';
     return;
   }
 
-  localStorage.setItem('emailjs_publicKey', publicKey);
-  localStorage.setItem('emailjs_serviceId', serviceId);
-  localStorage.setItem('emailjs_templateId', templateId);
-  localStorage.setItem('emailjs_raterEmail', raterEmail);
+  // Basic validation
+  if (!url.includes('docs.google.com/forms') && !url.includes('forms.gle')) {
+    statusEl.className = 'submission-status error';
+    statusEl.textContent = 'That does not look like a Google Form URL. It should contain "docs.google.com/forms" or "forms.gle".';
+    statusEl.style.display = 'block';
+    return;
+  }
 
-  // Initialise EmailJS with the public key
-  emailjs.init(publicKey);
+  localStorage.setItem('googleFormUrl', url);
 
   statusEl.className = 'submission-status success';
-  statusEl.textContent = 'Settings saved successfully! Student essays will now be emailed to you when submitted.';
+  statusEl.textContent = 'Google Form URL saved! Students can now submit their essays.';
   statusEl.style.display = 'block';
 
-  updateEmailConfigStatus();
+  updateFormConfigStatus();
 }
 
-function testEmailSettings() {
-  const config = getEmailConfig();
+function clearGoogleFormSettings() {
+  localStorage.removeItem('googleFormUrl');
+  document.getElementById('googleFormUrl').value = '';
   const statusEl = document.getElementById('settingsStatus');
-
-  if (!config) {
-    statusEl.className = 'submission-status error';
-    statusEl.textContent = 'Please save your settings first before testing.';
-    statusEl.style.display = 'block';
-    return;
-  }
-
-  statusEl.className = 'submission-status';
-  statusEl.innerHTML = '<span style="color: var(--gray-500);">Sending test email...</span>';
+  statusEl.className = 'submission-status success';
+  statusEl.textContent = 'Google Form URL removed.';
   statusEl.style.display = 'block';
-
-  const testParams = {
-    student_name: 'Test Student',
-    topic: 'Test Submission - Email Configuration',
-    essay: 'This is a test email to confirm that essay submissions are working correctly. If you receive this message, your EmailJS configuration is set up properly.',
-    word_count: '25',
-    submitted_at: new Date().toLocaleString(),
-    to_email: config.raterEmail
-  };
-
-  emailjs.send(config.serviceId, config.templateId, testParams)
-    .then(function() {
-      statusEl.className = 'submission-status success';
-      statusEl.textContent = 'Test email sent successfully! Check your inbox (and spam folder) to confirm delivery.';
-    })
-    .catch(function(error) {
-      console.error('Test email error:', error);
-      statusEl.className = 'submission-status error';
-      statusEl.innerHTML = `
-        <strong>Test email failed.</strong><br>
-        <span style="font-size:0.85rem;">Error: ${escapeHtml(error.text || 'Could not connect to email service')}. Please double-check your Service ID, Template ID, and Public Key.</span>
-      `;
-    });
+  updateFormConfigStatus();
 }
 
-function updateEmailConfigStatus() {
-  const statusEl = document.getElementById('emailConfigStatus');
+function updateFormConfigStatus() {
+  const statusEl = document.getElementById('formConfigStatus');
   if (!statusEl) return;
 
-  const config = getEmailConfig();
-  if (config) {
-    statusEl.innerHTML = `
-      <span style="color: var(--success); font-weight: 600;">&#10003; Email configured</span><br>
-      Service: <code>${escapeHtml(config.serviceId)}</code> |
-      Template: <code>${escapeHtml(config.templateId)}</code>
-      ${config.raterEmail ? '<br>Sending to: <code>' + escapeHtml(config.raterEmail) + '</code>' : ''}
-    `;
+  const url = localStorage.getItem('googleFormUrl');
+  if (url) {
+    statusEl.innerHTML = `<span style="color: var(--success); font-weight: 600;">&#10003; Google Form connected</span><br><span style="font-size:0.8rem; word-break:break-all;">${escapeHtml(url)}</span>`;
   } else {
-    statusEl.innerHTML = '<span style="color: var(--warning); font-weight: 600;">&#9888; Not configured</span> &mdash; Student submissions will be saved locally only.';
+    statusEl.innerHTML = '<span style="color: var(--warning); font-weight: 600;">&#9888; Not configured</span> &mdash; Students cannot submit essays until a Google Form URL is saved.';
   }
 }
 
-function loadEmailSettings() {
-  const config = getEmailConfig();
-  if (config) {
-    document.getElementById('emailjsPublicKey').value = config.publicKey;
-    document.getElementById('emailjsServiceId').value = config.serviceId;
-    document.getElementById('emailjsTemplateId').value = config.templateId;
-    document.getElementById('raterEmail').value = config.raterEmail;
-
-    // Initialise EmailJS
-    emailjs.init(config.publicKey);
+function loadFormSettings() {
+  const url = localStorage.getItem('googleFormUrl');
+  if (url) {
+    document.getElementById('googleFormUrl').value = url;
   }
-  updateEmailConfigStatus();
+  updateFormConfigStatus();
 }
 
 // ===== Loading Overlay =====
@@ -533,8 +450,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Set up word counter
   updateWordCount();
 
-  // Load email settings
-  loadEmailSettings();
+  // Load form settings
+  loadFormSettings();
 
   // Handle URL hash navigation
   const hash = window.location.hash.replace('#', '');

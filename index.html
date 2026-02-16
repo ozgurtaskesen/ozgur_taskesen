@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -786,35 +785,34 @@
     <!-- ===== SETTINGS PAGE (Rater/Teacher) ===== -->
     <section id="settings" class="page-section">
       <div class="section-header">
-        <h2>Email Submission Settings</h2>
-        <p>Configure email delivery so that student essays are sent directly to your inbox when they click "Submit for Review".</p>
+        <h2>Submission Settings</h2>
+        <p>Set up a Google Form so that student essays are collected in a Google Sheet when they click "Submit for Review".</p>
       </div>
 
       <div class="org-grid" style="grid-template-columns: 1fr 1fr;">
         <!-- Left: Setup Instructions -->
         <div class="card">
           <div class="card-header">
-            <h3>How to Set Up (One-Time)</h3>
+            <h3>How to Set Up (3 Minutes)</h3>
           </div>
           <div class="card-body">
             <ol style="padding-left: 1.25rem; color: var(--gray-600); line-height: 2; font-size: 0.9rem;">
-              <li>Go to <strong>emailjs.com</strong> and create a free account.</li>
-              <li>In the dashboard, click <strong>"Email Services"</strong> &rarr; <strong>"Add New Service"</strong>. Connect your email (Gmail, Outlook, etc.) and note the <strong>Service ID</strong> (e.g. <code>service_abc123</code>).</li>
-              <li>Go to <strong>"Email Templates"</strong> &rarr; <strong>"Create New Template"</strong>. Set up your template with these variables:
+              <li>Go to <strong>Google Forms</strong> (forms.google.com) and create a new form.</li>
+              <li>Add these 3 fields in order:
                 <ul style="margin-top: 0.25rem; list-style: disc; padding-left: 1.25rem;">
-                  <li><code>{{student_name}}</code> &mdash; the student's name</li>
-                  <li><code>{{topic}}</code> &mdash; the essay topic</li>
-                  <li><code>{{essay}}</code> &mdash; the full essay text</li>
-                  <li><code>{{word_count}}</code> &mdash; the word count</li>
-                  <li><code>{{submitted_at}}</code> &mdash; submission date/time</li>
+                  <li><strong>Student Name</strong> &mdash; Short answer</li>
+                  <li><strong>Essay Topic</strong> &mdash; Short answer</li>
+                  <li><strong>Essay</strong> &mdash; Paragraph (long answer)</li>
                 </ul>
-                Note the <strong>Template ID</strong> (e.g. <code>template_xyz789</code>).
               </li>
-              <li>Go to <strong>"Account"</strong> &rarr; <strong>"General"</strong> and copy your <strong>Public Key</strong>.</li>
-              <li>Enter all three values in the form on the right and click <strong>"Save Settings"</strong>.</li>
+              <li>Click <strong>Send</strong> (top-right), then click the <strong>link icon</strong> and copy the form URL.</li>
+              <li>Paste the URL in the box on the right and click <strong>"Save"</strong>.</li>
             </ol>
             <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: #f0fdf4; border-radius: var(--radius); border: 1px solid #bbf7d0; font-size: 0.85rem; color: #166534;">
-              <strong>Tip:</strong> The free plan allows 200 emails/month, which is enough for a typical class. Settings are saved in your browser so you only need to do this once.
+              <strong>That's it!</strong> All student essays will appear in the "Responses" tab of your Google Form, or you can click the green Sheets icon to view them in a spreadsheet.
+            </div>
+            <div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--primary-light); border-radius: var(--radius); border: 1px solid #93c5fd; font-size: 0.85rem; color: #1e40af;">
+              <strong>How it works:</strong> When a student clicks "Submit for Review", the Google Form opens in a new tab with their name, topic, and essay pre-filled. They just click "Submit" on the form.
             </div>
           </div>
         </div>
@@ -822,34 +820,20 @@
         <!-- Right: Configuration Form -->
         <div class="card">
           <div class="card-header">
-            <h3>EmailJS Configuration</h3>
-            <div class="subtitle">These credentials are stored locally in your browser only</div>
+            <h3>Google Form Configuration</h3>
+            <div class="subtitle">Paste your Google Form link below</div>
           </div>
           <div class="card-body">
             <div style="margin-bottom: 1.25rem;">
-              <label for="emailjsPublicKey" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.4rem;">Public Key</label>
-              <input type="text" id="emailjsPublicKey" placeholder="e.g. aBcDeFgHiJkLm"
-                style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem; font-family: monospace;">
-            </div>
-            <div style="margin-bottom: 1.25rem;">
-              <label for="emailjsServiceId" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.4rem;">Service ID</label>
-              <input type="text" id="emailjsServiceId" placeholder="e.g. service_abc123"
-                style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem; font-family: monospace;">
-            </div>
-            <div style="margin-bottom: 1.25rem;">
-              <label for="emailjsTemplateId" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.4rem;">Template ID</label>
-              <input type="text" id="emailjsTemplateId" placeholder="e.g. template_xyz789"
-                style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem; font-family: monospace;">
-            </div>
-            <div style="margin-bottom: 1.25rem;">
-              <label for="raterEmail" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.4rem;">Your Email (where essays are sent)</label>
-              <input type="email" id="raterEmail" placeholder="e.g. teacher@school.edu"
+              <label for="googleFormUrl" style="display:block; font-size:0.85rem; font-weight:600; color:var(--gray-700); margin-bottom:0.4rem;">Google Form URL</label>
+              <input type="url" id="googleFormUrl" placeholder="https://docs.google.com/forms/d/e/xxxx/viewform"
                 style="width:100%; padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:0.9rem;">
+              <p style="font-size: 0.8rem; color: var(--gray-400); margin-top: 0.4rem;">The URL should look like: https://docs.google.com/forms/d/e/.../viewform</p>
             </div>
 
             <div class="btn-group" style="margin-top: 1rem;">
-              <button class="btn btn-primary" onclick="saveEmailSettings()">Save Settings</button>
-              <button class="btn btn-secondary" onclick="testEmailSettings()">Send Test Email</button>
+              <button class="btn btn-primary" onclick="saveGoogleFormSettings()">Save</button>
+              <button class="btn btn-danger" onclick="clearGoogleFormSettings()" style="font-size:0.8rem;">Remove</button>
             </div>
 
             <div id="settingsStatus" class="submission-status" style="margin-top: 1rem;"></div>
@@ -857,37 +841,11 @@
             <!-- Current Status -->
             <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--gray-200);">
               <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--gray-700); margin-bottom: 0.5rem;">Current Status</h4>
-              <div id="emailConfigStatus" style="font-size: 0.85rem; color: var(--gray-500);">
+              <div id="formConfigStatus" style="font-size: 0.85rem; color: var(--gray-500);">
                 Checking configuration...
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Sample Template -->
-      <div class="card" style="margin-top: 2rem;">
-        <div class="card-header">
-          <h3>Recommended Email Template</h3>
-          <div class="subtitle">Copy this into your EmailJS template editor</div>
-        </div>
-        <div class="card-body">
-          <pre style="background: var(--gray-100); padding: 1.25rem; border-radius: var(--radius); font-size: 0.85rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; color: var(--gray-700);">Subject: Essay Submission from {{student_name}}
-
-New essay submission received:
-
-Student: {{student_name}}
-Topic: {{topic}}
-Word Count: {{word_count}}
-Submitted: {{submitted_at}}
-
---- ESSAY ---
-
-{{essay}}
-
---- END ---
-
-Sent from CEFR B1+ Essay Writing Platform</pre>
         </div>
       </div>
     </section>
