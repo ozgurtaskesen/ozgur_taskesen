@@ -54,52 +54,155 @@ const AIChecker = {
     }
   },
 
-  // ===== Common Grammar Error Patterns =====
+  // ===== Common Grammar, Vocabulary, Spelling & Punctuation Error Patterns =====
   grammarPatterns: [
-    // Subject-verb agreement
-    { pattern: /\b(he|she|it|everyone|everybody|nobody|someone|each)\s+(are|were|have|do|go|come|make|take|run|play|want|need|like|think|know|say)\b/gi, correction: "Subject-verb agreement error", type: "grammar" },
-    { pattern: /\b(they|we|people|students|children)\s+(is|was|has|does|goes|comes|makes|takes|runs|plays|wants|needs|likes|thinks|knows|says)\b/gi, correction: "Subject-verb agreement error", type: "grammar" },
+    // === SUBJECT-VERB AGREEMENT ===
+    { pattern: /\b(he|she|it|everyone|everybody|nobody|someone|somebody|each|every\s+\w+)\s+(are|were|have|do|go|come|make|take|run|play|want|need|like|think|know|say|seem|appear|look|feel)\b/gi, correction: "Subject-verb agreement error: singular subject needs singular verb", type: "grammar" },
+    { pattern: /\b(they|we|people|students|children|parents|governments|companies|countries)\s+(is|was|has|does|goes|comes|makes|takes|runs|plays|wants|needs|likes|thinks|knows|says|seems|appears|looks|feels)\b/gi, correction: "Subject-verb agreement error: plural subject needs plural verb", type: "grammar" },
+    { pattern: /\b(the number of \w+)\s+(are|were|have)\b/gi, correction: "Subject-verb agreement: 'the number of' takes a singular verb", type: "grammar" },
+    { pattern: /\b(a number of \w+)\s+(is|was|has)\b/gi, correction: "Subject-verb agreement: 'a number of' takes a plural verb", type: "grammar" },
 
-    // Article errors
-    { pattern: /\ba\s+(hour|honest|honour|heir)\b/gi, correction: "Use 'an' before words beginning with a silent 'h'", type: "grammar" },
-    { pattern: /\ban\s+(university|uniform|unique|united|useful|usual|European|one)\b/gi, correction: "Use 'a' before words with a consonant sound", type: "grammar" },
+    // === ARTICLE ERRORS ===
+    { pattern: /\ba\s+(hour|honest|honour|heir|herb)\b/gi, correction: "Should be 'an' before words beginning with a silent 'h'", type: "grammar" },
+    { pattern: /\ban\s+(university|uniform|unique|united|useful|usual|European|one|once)\b/gi, correction: "Should be 'a' before words with a consonant sound", type: "grammar" },
+    { pattern: /\b(is|was|become|became)\s+(good|bad|big|small|important|interesting|difficult|easy|great|serious|major|significant|common|growing|increasing)\s+(problem|issue|idea|thing|place|reason|way|example|advantage|disadvantage|solution|factor|cause|effect|result|benefit|challenge|concern|topic|question)\b/gi, correction: "Consider adding an article (a/an/the) before the adjective", type: "grammar" },
 
-    // Double negatives
-    { pattern: /\b(don't|doesn't|didn't|can't|won't|shouldn't|wouldn't|couldn't)\s+\w+\s+(no|nothing|nobody|nowhere|neither)\b/gi, correction: "Avoid double negatives", type: "grammar" },
+    // === DOUBLE NEGATIVES ===
+    { pattern: /\b(don't|doesn't|didn't|can't|won't|shouldn't|wouldn't|couldn't|isn't|aren't|wasn't|weren't|haven't|hasn't)\s+\w+\s+(no|nothing|nobody|nowhere|neither|none)\b/gi, correction: "Avoid double negatives", type: "grammar" },
 
-    // Confused words
-    { pattern: /\btheir\s+(is|are|was|were)\b/gi, correction: "Did you mean 'there'?", type: "grammar" },
-    { pattern: /\bthere\s+(car|house|book|idea|opinion|friend|family|school|work)\b/gi, correction: "Did you mean 'their'?", type: "grammar" },
-    { pattern: /\byour\s+(right|welcome|going|doing)\b/gi, correction: "Did you mean 'you're'?", type: "grammar" },
-    { pattern: /\bits\s+(a\s+)?(important|clear|obvious|true|necessary|possible|difficult|easy)\b/gi, correction: "Did you mean 'it's' (it is)?", type: "grammar" },
+    // === CONFUSED WORDS / HOMOPHONES ===
+    { pattern: /\btheir\s+(is|are|was|were)\b/gi, correction: "Should be 'there' (there is/are)", type: "grammar" },
+    { pattern: /\bthere\s+(car|house|book|idea|opinion|friend|family|school|work|life|job|money|health|children|parents|future|education|problem)\b/gi, correction: "Should be 'their' (possessive)", type: "grammar" },
+    { pattern: /\byour\s+(right|welcome|going|doing|saying|looking|coming|talking)\b/gi, correction: "Should be 'you're' (you are)", type: "grammar" },
+    { pattern: /\bits\s+(a\s+)?(important|clear|obvious|true|necessary|possible|difficult|easy|better|essential|crucial|vital|common|well\s+known)\b/gi, correction: "Should be 'it's' (it is)", type: "grammar" },
+    { pattern: /\bwho's\s+(car|house|book|idea|fault|job|turn|phone|name|responsibility)\b/gi, correction: "Should be 'whose' (possessive)", type: "grammar" },
+    { pattern: /\bthen\s+(the|a|an)\b/gi, correction: "Did you mean 'than' (comparison)?", type: "grammar" },
+    { pattern: /\bmore\s+\w+\s+then\b/gi, correction: "Should be 'than' in comparisons", type: "grammar" },
+    { pattern: /\beffect\s+(on|the)\b/gi, correction: "Check: did you mean 'affect' (verb) or 'effect' (noun)?", type: "vocabulary" },
+    { pattern: /\bto\s+(much|many|few|little|often|late|early|fast|slow|hard|long|short|far)\b/gi, correction: "Should be 'too' (meaning excessively)", type: "grammar" },
+    { pattern: /\blose\s+(their|his|her|your|my|our|the)\s+(mind|way|job|life)\b/gi, correction: null, type: "skip" },
+    { pattern: /\bloose\s+(their|his|her|your|my|our|the|weight|money|time|hope|interest|control|touch|sight)\b/gi, correction: "Should be 'lose' (to lose something)", type: "vocabulary" },
+    { pattern: /\bwether\b/gi, correction: "Spelling: should be 'whether'", type: "spelling" },
+    { pattern: /\bwich\b/gi, correction: "Spelling: should be 'which'", type: "spelling" },
+    { pattern: /\balot\b/gi, correction: "Spelling: should be 'a lot' (two words)", type: "spelling" },
+    { pattern: /\binfact\b/gi, correction: "Spelling: should be 'in fact' (two words)", type: "spelling" },
     { pattern: /\bshould\s+of\b/gi, correction: "Should be 'should have'", type: "grammar" },
     { pattern: /\bcould\s+of\b/gi, correction: "Should be 'could have'", type: "grammar" },
     { pattern: /\bwould\s+of\b/gi, correction: "Should be 'would have'", type: "grammar" },
+    { pattern: /\bmight\s+of\b/gi, correction: "Should be 'might have'", type: "grammar" },
+    { pattern: /\bmust\s+of\b/gi, correction: "Should be 'must have'", type: "grammar" },
 
-    // Comma splice
-    { pattern: /[a-z],\s+(he|she|it|they|we|I|this|that|these|those)\s+(is|are|was|were|has|have|had|will|would|can|could|should|may|might)\b/gi, correction: "Possible comma splice: consider using a full stop, semicolon, or conjunction", type: "grammar" },
+    // === COMMON SPELLING MISTAKES ===
+    { pattern: /\brecieve\b/gi, correction: "Spelling: should be 'receive'", type: "spelling" },
+    { pattern: /\bbelive\b/gi, correction: "Spelling: should be 'believe'", type: "spelling" },
+    { pattern: /\bbeacuse\b/gi, correction: "Spelling: should be 'because'", type: "spelling" },
+    { pattern: /\bbecuase\b/gi, correction: "Spelling: should be 'because'", type: "spelling" },
+    { pattern: /\bbecouse\b/gi, correction: "Spelling: should be 'because'", type: "spelling" },
+    { pattern: /\bwich\b/gi, correction: "Spelling: should be 'which'", type: "spelling" },
+    { pattern: /\bthier\b/gi, correction: "Spelling: should be 'their'", type: "spelling" },
+    { pattern: /\bteh\b/gi, correction: "Spelling: should be 'the'", type: "spelling" },
+    { pattern: /\bdefinate\b/gi, correction: "Spelling: should be 'definite'", type: "spelling" },
+    { pattern: /\bdefinately\b/gi, correction: "Spelling: should be 'definitely'", type: "spelling" },
+    { pattern: /\bseperate\b/gi, correction: "Spelling: should be 'separate'", type: "spelling" },
+    { pattern: /\boccured\b/gi, correction: "Spelling: should be 'occurred'", type: "spelling" },
+    { pattern: /\boccasionaly\b/gi, correction: "Spelling: should be 'occasionally'", type: "spelling" },
+    { pattern: /\bneccessary\b/gi, correction: "Spelling: should be 'necessary'", type: "spelling" },
+    { pattern: /\bneccesary\b/gi, correction: "Spelling: should be 'necessary'", type: "spelling" },
+    { pattern: /\bneccessity\b/gi, correction: "Spelling: should be 'necessity'", type: "spelling" },
+    { pattern: /\benviroment\b/gi, correction: "Spelling: should be 'environment'", type: "spelling" },
+    { pattern: /\benvirnoment\b/gi, correction: "Spelling: should be 'environment'", type: "spelling" },
+    { pattern: /\bgovernement\b/gi, correction: "Spelling: should be 'government'", type: "spelling" },
+    { pattern: /\bgoverment\b/gi, correction: "Spelling: should be 'government'", type: "spelling" },
+    { pattern: /\bdevelopement\b/gi, correction: "Spelling: should be 'development'", type: "spelling" },
+    { pattern: /\bdevelope\b/gi, correction: "Spelling: should be 'develop'", type: "spelling" },
+    { pattern: /\bknowlege\b/gi, correction: "Spelling: should be 'knowledge'", type: "spelling" },
+    { pattern: /\bknowlede\b/gi, correction: "Spelling: should be 'knowledge'", type: "spelling" },
+    { pattern: /\bexperiance\b/gi, correction: "Spelling: should be 'experience'", type: "spelling" },
+    { pattern: /\bexistance\b/gi, correction: "Spelling: should be 'existence'", type: "spelling" },
+    { pattern: /\brefered\b/gi, correction: "Spelling: should be 'referred'", type: "spelling" },
+    { pattern: /\bprefered\b/gi, correction: "Spelling: should be 'preferred'", type: "spelling" },
+    { pattern: /\bbenificial\b/gi, correction: "Spelling: should be 'beneficial'", type: "spelling" },
+    { pattern: /\boppertunity\b/gi, correction: "Spelling: should be 'opportunity'", type: "spelling" },
+    { pattern: /\bopportuniy\b/gi, correction: "Spelling: should be 'opportunity'", type: "spelling" },
+    { pattern: /\bdifficuly\b/gi, correction: "Spelling: should be 'difficulty'", type: "spelling" },
+    { pattern: /\bsucessful\b/gi, correction: "Spelling: should be 'successful'", type: "spelling" },
+    { pattern: /\bsuccesful\b/gi, correction: "Spelling: should be 'successful'", type: "spelling" },
+    { pattern: /\bsucceed\b/gi, correction: null, type: "skip" },
+    { pattern: /\bthough\b/gi, correction: null, type: "skip" },
+    { pattern: /\bthougth\b/gi, correction: "Spelling: should be 'thought'", type: "spelling" },
+    { pattern: /\bforiegn\b/gi, correction: "Spelling: should be 'foreign'", type: "spelling" },
+    { pattern: /\bfreind\b/gi, correction: "Spelling: should be 'friend'", type: "spelling" },
+    { pattern: /\buntill\b/gi, correction: "Spelling: should be 'until'", type: "spelling" },
+    { pattern: /\bbeggining\b/gi, correction: "Spelling: should be 'beginning'", type: "spelling" },
+    { pattern: /\bbeginig\b/gi, correction: "Spelling: should be 'beginning'", type: "spelling" },
+    { pattern: /\bimmediately\b/gi, correction: null, type: "skip" },
+    { pattern: /\bimmediatly\b/gi, correction: "Spelling: should be 'immediately'", type: "spelling" },
+    { pattern: /\baccomodation\b/gi, correction: "Spelling: should be 'accommodation'", type: "spelling" },
+    { pattern: /\bpossibilty\b/gi, correction: "Spelling: should be 'possibility'", type: "spelling" },
+    { pattern: /\bresponsibilty\b/gi, correction: "Spelling: should be 'responsibility'", type: "spelling" },
+    { pattern: /\bprivelege\b/gi, correction: "Spelling: should be 'privilege'", type: "spelling" },
+    { pattern: /\bprivilege\b/gi, correction: null, type: "skip" },
+    { pattern: /\bwhitch\b/gi, correction: "Spelling: should be 'which'", type: "spelling" },
+    { pattern: /\bpoeple\b/gi, correction: "Spelling: should be 'people'", type: "spelling" },
+    { pattern: /\bpeaple\b/gi, correction: "Spelling: should be 'people'", type: "spelling" },
+    { pattern: /\bsocitey\b/gi, correction: "Spelling: should be 'society'", type: "spelling" },
+    { pattern: /\bsoceity\b/gi, correction: "Spelling: should be 'society'", type: "spelling" },
+    { pattern: /\btechnolgy\b/gi, correction: "Spelling: should be 'technology'", type: "spelling" },
+    { pattern: /\btechnologi\b/gi, correction: "Spelling: should be 'technology'", type: "spelling" },
+    { pattern: /\beducaton\b/gi, correction: "Spelling: should be 'education'", type: "spelling" },
+    { pattern: /\badditionaly\b/gi, correction: "Spelling: should be 'additionally'", type: "spelling" },
+    { pattern: /\bfurthurmore\b/gi, correction: "Spelling: should be 'furthermore'", type: "spelling" },
 
-    // Missing article
-    { pattern: /\b(is|was|become|became)\s+(good|bad|big|small|important|interesting|difficult|easy|great|serious|major|significant)\s+(problem|issue|idea|thing|place|reason|way|example|advantage|disadvantage|solution|factor|cause|effect|result|benefit|challenge)\b/gi, correction: "Consider adding an article (a/an/the) before the adjective", type: "grammar" },
+    // === COMMA SPLICE ===
+    { pattern: /[a-z],\s+(he|she|it|they|we|I|this|that|these|those)\s+(is|are|was|were|has|have|had|will|would|can|could|should|may|might)\b/gi, correction: "Comma splice: use a full stop, semicolon, or add a conjunction (and, but, so)", type: "grammar" },
 
-    // Run-on
-    { pattern: /[a-z]\s+(I|he|she|it|they|we|people|students|this|the government|many)\s+(think|believe|feel|is|are|was|were|should|can|will|would|must|need)\b/g, correction: "Possible run-on sentence: consider adding punctuation or a conjunction", type: "grammar" },
-
-    // Preposition errors
+    // === PREPOSITION ERRORS ===
     { pattern: /\bdepend\s+of\b/gi, correction: "Should be 'depend on'", type: "grammar" },
     { pattern: /\binterested\s+for\b/gi, correction: "Should be 'interested in'", type: "grammar" },
     { pattern: /\bgood\s+in\b/gi, correction: "Should be 'good at'", type: "grammar" },
     { pattern: /\bdifferent\s+of\b/gi, correction: "Should be 'different from'", type: "grammar" },
     { pattern: /\bconsist\s+in\b/gi, correction: "Should be 'consist of'", type: "grammar" },
     { pattern: /\bsuffer\s+of\b/gi, correction: "Should be 'suffer from'", type: "grammar" },
+    { pattern: /\bresponsible\s+of\b/gi, correction: "Should be 'responsible for'", type: "grammar" },
+    { pattern: /\bcapable\s+to\b/gi, correction: "Should be 'capable of'", type: "grammar" },
+    { pattern: /\baware\s+for\b/gi, correction: "Should be 'aware of'", type: "grammar" },
+    { pattern: /\bfamiliar\s+about\b/gi, correction: "Should be 'familiar with'", type: "grammar" },
+    { pattern: /\bworried\s+for\b/gi, correction: "Should be 'worried about'", type: "grammar" },
+    { pattern: /\bconcentrate\s+for\b/gi, correction: "Should be 'concentrate on'", type: "grammar" },
+    { pattern: /\baccording\s+with\b/gi, correction: "Should be 'according to'", type: "grammar" },
+    { pattern: /\bapply\s+a\s+job\b/gi, correction: "Should be 'apply for a job'", type: "grammar" },
+    { pattern: /\bresult\s+of\b/gi, correction: null, type: "skip" },
+    { pattern: /\bsimilar\s+as\b/gi, correction: "Should be 'similar to'", type: "grammar" },
+    { pattern: /\bprevents?\s+from\s+to\b/gi, correction: "Should be 'prevent from + -ing' (gerund, not infinitive)", type: "grammar" },
 
-    // Tense consistency
+    // === TENSE ERRORS ===
     { pattern: /\byesterday\s+\w+\s+(is|are|has|have|do|does)\b/gi, correction: "Use past tense with 'yesterday'", type: "grammar" },
+    { pattern: /\blast\s+(week|month|year|night|time)\s+\w+\s+(is|are|has|have|do|does)\b/gi, correction: "Use past tense with time expressions referring to the past", type: "grammar" },
     { pattern: /\bnext\s+(week|month|year)\s+\w+\s+(was|were|had|did)\b/gi, correction: "Use future tense with 'next week/month/year'", type: "grammar" },
+    { pattern: /\bsince\s+\w+\s+(is|are|was|were)\b/gi, correction: "Use present perfect (has/have + past participle) with 'since'", type: "grammar" },
 
-    // Redundancy
+    // === WORD FORM ERRORS ===
+    { pattern: /\b(very|really|extremely|quite|too)\s+(agree|disagree|benefit|effect|success|education|society|importance|difference)\b/gi, correction: "Word form error: use the adjective form, not the noun/verb", type: "vocabulary" },
+    { pattern: /\bmore\s+(easy|happy|simple|busy|early|heavy|angry|funny|lucky|healthy|dirty|pretty|lazy|ugly|noisy|lonely)\b/gi, correction: "Word form: use the comparative form (e.g. 'easier', 'happier') instead of 'more + adjective'", type: "grammar" },
+    { pattern: /\bmost\s+(easy|happy|simple|busy|early|heavy|angry|funny|lucky|healthy|dirty|pretty|lazy|ugly|noisy|lonely)\b/gi, correction: "Word form: use the superlative form (e.g. 'easiest', 'happiest') instead of 'most + adjective'", type: "grammar" },
+
+    // === MISSING COMMA AFTER INTRODUCTORY ELEMENTS ===
+    { pattern: /^(However|Furthermore|Moreover|Nevertheless|Therefore|Consequently|Additionally|Similarly|Conversely|Firstly|Secondly|Thirdly|Finally|Lastly|Meanwhile|Nonetheless|Otherwise|Alternatively|Subsequently|Accordingly)\s+[a-z]/gm, correction: "Add a comma after the introductory word", type: "punctuation" },
+    { pattern: /^(In addition|On the other hand|As a result|For example|For instance|In contrast|In conclusion|To sum up|All in all|On balance|In my opinion|In my view|To begin with|First of all|On the contrary|In other words|As a consequence)\s+[a-z]/gm, correction: "Add a comma after this introductory phrase", type: "punctuation" },
+
+    // === PUNCTUATION ERRORS ===
+    { pattern: /\s+[,\.;:!?]/g, correction: "Remove the space before punctuation", type: "punctuation" },
+    { pattern: /[,\.;:!?]{2,}/g, correction: "Remove duplicate punctuation marks", type: "punctuation" },
+
+    // === REDUNDANCY ===
     { pattern: /\breturn\s+back\b/gi, correction: "'Return' already means 'go back'; remove 'back'", type: "grammar" },
     { pattern: /\brepeat\s+again\b/gi, correction: "'Repeat' already means 'do again'; remove 'again'", type: "grammar" },
+    { pattern: /\bcooperate\s+together\b/gi, correction: "'Cooperate' already implies 'together'; remove 'together'", type: "grammar" },
+    { pattern: /\bfirst\s+began\b/gi, correction: "Redundant: 'began' already implies the first time; use just 'began'", type: "grammar" },
+    { pattern: /\babsolutely\s+essential\b/gi, correction: "Redundant: 'essential' is already absolute; use just 'essential'", type: "grammar" },
+
+    // === FRAGMENT DETECTION (very short clauses lacking a verb) ===
+    { pattern: /\.\s+(But|And|Or|Because|Although|Since|While)\s+[a-z]+\s*\./gi, correction: "Sentence fragment: this may not be a complete sentence. Consider joining it with the previous sentence.", type: "grammar" },
   ],
 
   // ===== Structure types for range analysis =====
@@ -203,10 +306,10 @@ const AIChecker = {
     // Generate sentence alternatives for popup
     const sentenceAlternatives = this.generateSentenceAlternatives(text, grammarResult.errors);
 
-    // Build corrected essay with highlights (red errors, green vocab, yellow underdeveloped)
+    // Build corrected essay with highlights (red errors, yellow underdeveloped)
     const correctedEssay = this.buildCorrectedEssay(
       text, paragraphs, grammarResult.errors, orgResult.issues, contentResult.issues,
-      vocabResult.advancedPositions, contentResult.underdevelopedParagraphs, sentenceAlternatives
+      contentResult.underdevelopedParagraphs, sentenceAlternatives
     );
 
     // Build feedback with scale descriptors
@@ -253,8 +356,9 @@ const AIChecker = {
   analyseGrammar(text, sentences, words) {
     const errors = [];
 
-    // Detect errors
+    // Detect errors (skip rules with null correction or "skip" type)
     for (const rule of this.grammarPatterns) {
+      if (!rule.correction || rule.type === "skip") continue;
       let match;
       const regex = new RegExp(rule.pattern.source, rule.pattern.flags);
       while ((match = regex.exec(text)) !== null) {
@@ -537,17 +641,7 @@ const AIChecker = {
       feedback.improvements.push("Continue building your vocabulary at B1+/B2 level to achieve a wider and more appropriate range.");
     }
 
-    // Track positions of correctly used advanced vocabulary for green highlighting
-    const advancedPositions = [];
-    for (const word of usedAdvanced) {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        advancedPositions.push({ start: match.index, end: match.index + match[0].length, word: match[0] });
-      }
-    }
-
-    return { score, feedback, rangeBand, appropriatenessBand, advancedPositions };
+    return { score, feedback, rangeBand, appropriatenessBand };
   },
 
   // =====================================================================
@@ -607,18 +701,25 @@ const AIChecker = {
     let underdevelopedBodies = 0;
     const underdevelopedParagraphs = []; // Track indices of underdeveloped paragraphs
     const bodyParagraphs = paragraphs.slice(1, paragraphs.length >= 4 ? -1 : paragraphs.length);
+    const detailSignals = /for example|for instance|such as|to illustrate|this is because|this means|as a result|the reason|this leads to|this shows|which means|in other words|one example|a good example|studies show|research shows|according to|evidence suggests/i;
 
     for (let i = 0; i < bodyParagraphs.length; i++) {
       const paraText = bodyParagraphs[i];
       const paraSentences = paraText.split(/[.!?]+/).filter(s => s.trim().length > 0);
       const paraWords = paraText.split(/\s+/).filter(w => w.length > 0);
+      const hasDetailInPara = detailSignals.test(paraText);
 
-      if (paraSentences.length >= 4 && paraWords.length >= 50) {
+      if (paraSentences.length >= 4 && paraWords.length >= 50 && hasDetailInPara) {
         wellDevelopedBodies++;
-      } else if (paraSentences.length < 2 || paraWords.length < 30) {
+      } else if (paraSentences.length < 3 || paraWords.length < 40 || (!hasDetailInPara && paraWords.length < 60)) {
+        // Underdeveloped: too short, or lacks examples/explanations
         underdevelopedBodies++;
         underdevelopedParagraphs.push(i + 1); // actual paragraph index (body paras start at index 1)
-        issues.push({ type: "content", message: `Body paragraph ${i + 1} needs more development. Expand with explanations, evidence, or examples to justify your point.`, paragraph: i + 1 });
+        if (!hasDetailInPara) {
+          issues.push({ type: "content", message: `Body paragraph ${i + 1} lacks supporting details. Add examples, explanations, or evidence to expand and justify your argument.`, paragraph: i + 1 });
+        } else {
+          issues.push({ type: "content", message: `Body paragraph ${i + 1} needs more development. Expand with further explanations, evidence, or examples to fully justify your point.`, paragraph: i + 1 });
+        }
       }
     }
 
@@ -963,40 +1064,80 @@ const AIChecker = {
 
   // ===== Extract a direct correction from an error message =====
   extractCorrection(message, original) {
-    // "Should be 'should have'"
+    if (!message || !original) return null;
+
+    // "Should be 'should have'" / "Should be 'depend on'" etc.
     const shouldBeMatch = message.match(/[Ss]hould be '([^']+)'/);
     if (shouldBeMatch) return shouldBeMatch[1];
 
-    // "Use 'an' before..."
-    const useMatch = message.match(/[Uu]se '([^']+)'\s+before/);
-    if (useMatch) {
-      // Replace the article: "a hour" -> "an hour"
-      const article = original.trim().split(/\s+/)[0];
-      return original.replace(new RegExp(`^${article}`, 'i'), useMatch[1]);
+    // "Should be 'an' before..." → replace article in original
+    const articleMatch = message.match(/[Ss]hould be '(an?|the)' before/);
+    if (articleMatch) {
+      const firstWord = original.trim().split(/\s+/)[0];
+      return original.replace(new RegExp('^' + firstWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), articleMatch[1]);
     }
 
-    // "Use 'a' before..."
-    const useAMatch = message.match(/[Uu]se '([^']+)'\s+before/);
-    if (useAMatch && !useMatch) return null;
-
-    // "Did you mean 'there'?"
+    // "Did you mean 'there'?" / "Did you mean 'their'?" etc.
     const meanMatch = message.match(/[Dd]id you mean '([^']+)'/);
     if (meanMatch) return meanMatch[1];
 
-    // "remove 'back'" / "remove 'again'"
+    // "Spelling: should be 'receive'" → direct replacement
+    const spellingMatch = message.match(/[Ss]pelling:\s+should be '([^']+)'/);
+    if (spellingMatch) return spellingMatch[1];
+
+    // "remove 'back'" / "remove 'again'" / "remove 'together'"
     const removeMatch = message.match(/remove '([^']+)'/i);
     if (removeMatch) {
-      return original.replace(new RegExp(`\\s*\\b${removeMatch[1]}\\b`, 'i'), '').trim();
+      return original.replace(new RegExp('\\s*\\b' + removeMatch[1] + '\\b', 'i'), '').trim();
+    }
+
+    // "use just 'began'" or "use just 'essential'"
+    const useJustMatch = message.match(/use just '([^']+)'/i);
+    if (useJustMatch) return useJustMatch[1];
+
+    // "Should be 'too' (meaning excessively)"
+    const tooMatch = message.match(/[Ss]hould be '(too)'/);
+    if (tooMatch) {
+      return original.replace(/\bto\b/i, 'too');
+    }
+
+    // "use the comparative form (e.g. 'easier'...)" → extract the example
+    const comparativeMatch = message.match(/e\.g\.\s+'([^']+)'/);
+    if (comparativeMatch) return comparativeMatch[1];
+
+    // "Add a comma after" → insert comma
+    if (/[Aa]dd a comma after/.test(message)) {
+      // Add comma after the matched introductory word/phrase
+      return original.trimEnd() + ',';
+    }
+
+    // "Remove the space before punctuation"
+    if (/[Rr]emove the space before punctuation/.test(message)) {
+      return original.replace(/\s+([,\.;:!?])/g, '$1');
+    }
+
+    // "Remove duplicate punctuation marks"
+    if (/[Rr]emove duplicate punctuation/.test(message)) {
+      return original.replace(/([,\.;:!?])\1+/g, '$1');
+    }
+
+    // For comma splice: suggest replacing comma with full stop
+    if (/[Cc]omma splice/.test(message)) {
+      const commaIdx = original.indexOf(',');
+      if (commaIdx > 0) {
+        const before = original.substring(0, commaIdx);
+        const after = original.substring(commaIdx + 1).trim();
+        return before + '. ' + after.charAt(0).toUpperCase() + after.slice(1);
+      }
     }
 
     return null;
   },
 
   // ===== Build Corrected Essay with Highlighted Errors =====
-  buildCorrectedEssay(text, paragraphs, grammarErrors, orgIssues, contentIssues, advancedVocabPositions, underdevelopedParagraphs, sentenceAlternatives) {
+  buildCorrectedEssay(text, paragraphs, grammarErrors, orgIssues, contentIssues, underdevelopedParagraphs, sentenceAlternatives) {
     let html = '';
     const paragraphLabels = ['Introduction', 'Body Paragraph 1', 'Body Paragraph 2', 'Conclusion'];
-    advancedVocabPositions = advancedVocabPositions || [];
     underdevelopedParagraphs = underdevelopedParagraphs || [];
     sentenceAlternatives = sentenceAlternatives || [];
 
@@ -1016,18 +1157,14 @@ const AIChecker = {
       const paraErrors = grammarErrors.filter(e => e.start >= paraStart && e.end <= paraStart + para.length)
         .map(e => ({ ...e, start: e.start - paraStart, end: e.end - paraStart }));
 
-      // Find advanced vocab positions in this paragraph (adjusted to local positions)
-      const paraVocab = advancedVocabPositions.filter(v => v.start >= paraStart && v.end <= paraStart + para.length)
-        .map(v => ({ ...v, start: v.start - paraStart, end: v.end - paraStart }));
-
       // Check for organisation/content issues
       const paraOrgIssues = orgIssues.filter(i => i.paragraph === pIdx);
       const paraContentIssues = contentIssues.filter(i => i.paragraph === pIdx);
       const hasIssues = paraOrgIssues.length > 0 || paraContentIssues.length > 0;
       const isUnderdeveloped = underdevelopedParagraphs.includes(pIdx);
 
-      // Apply multi-type highlights (red errors + green vocab)
-      let highlightedText = this.applyHighlightsMulti(para, paraErrors, paraVocab);
+      // Apply error highlights (red)
+      let highlightedText = this.applyErrorHighlights(para, paraErrors);
 
       // Determine paragraph CSS class
       let paraClass = 'essay-paragraph';
@@ -1084,57 +1221,30 @@ const AIChecker = {
     return html;
   },
 
-  // ===== Apply Multi-type Highlights (Red errors + Green vocab) =====
-  applyHighlightsMulti(text, errors, vocabPositions) {
-    // Merge all highlights, giving priority to errors over vocab
-    const highlights = [];
+  // ===== Apply Red Error Highlights =====
+  applyErrorHighlights(text, errors) {
+    if (errors.length === 0) return this.escapeHtml(text);
 
-    // Add errors (priority 1 - red)
-    for (const err of errors) {
-      highlights.push({ start: err.start, end: err.end, type: 'error', message: err.message });
-    }
-
-    // Add vocab (priority 2 - green) - skip if overlapping with any error
-    for (const vp of (vocabPositions || [])) {
-      const overlaps = errors.some(e =>
-        (vp.start >= e.start && vp.start < e.end) ||
-        (vp.end > e.start && vp.end <= e.end) ||
-        (e.start >= vp.start && e.start < vp.end)
-      );
-      if (!overlaps) {
-        highlights.push({ start: vp.start, end: vp.end, type: 'vocab', word: vp.word });
-      }
-    }
-
-    if (highlights.length === 0) return this.escapeHtml(text);
-
-    // Sort by start position
-    highlights.sort((a, b) => a.start - b.start);
+    const sorted = [...errors].sort((a, b) => a.start - b.start);
 
     // Remove overlaps (keep earlier ones)
     const filtered = [];
     let lastEnd = -1;
-    for (const h of highlights) {
-      if (h.start >= lastEnd) {
-        filtered.push(h);
-        lastEnd = h.end;
+    for (const err of sorted) {
+      if (err.start >= lastEnd) {
+        filtered.push(err);
+        lastEnd = err.end;
       }
     }
 
-    // Build HTML
+    // Build HTML with red highlights
     let result = '';
     let pos = 0;
-    for (const h of filtered) {
-      result += this.escapeHtml(text.substring(pos, h.start));
-      const hText = this.escapeHtml(text.substring(h.start, h.end));
-
-      if (h.type === 'error') {
-        result += `<span class="error-highlight" data-tooltip="${this.escapeHtml(h.message)}">${hText}</span>`;
-      } else if (h.type === 'vocab') {
-        result += `<span class="vocab-highlight" title="Good use of upper-intermediate vocabulary">${hText}</span>`;
-      }
-
-      pos = h.end;
+    for (const err of filtered) {
+      result += this.escapeHtml(text.substring(pos, err.start));
+      const errText = this.escapeHtml(text.substring(err.start, err.end));
+      result += `<span class="error-highlight" data-tooltip="${this.escapeHtml(err.message)}">${errText}</span>`;
+      pos = err.end;
     }
     result += this.escapeHtml(text.substring(pos));
     return result;

@@ -842,16 +842,6 @@ main {
   border-radius: 0 4px 4px 0;
 }
 
-/* ===== Green Highlight: Correct Advanced Vocabulary ===== */
-.vocab-highlight {
-  color: #166534;
-  background: #dcfce7;
-  border-radius: 2px;
-  padding: 0 2px;
-  font-weight: 600;
-  cursor: default;
-}
-
 /* ===== Yellow Highlight: Underdeveloped Paragraphs ===== */
 .expansion-needed {
   background: #fefce8;
