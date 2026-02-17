@@ -270,6 +270,15 @@ function displayFeedback(elementId, feedback) {
   const el = document.getElementById(elementId);
   let html = '';
 
+  // Show the rubric scale descriptor for the awarded grade
+  if (feedback.descriptor) {
+    html += `
+      <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--gray-600); line-height: 1.5;">
+        <strong style="color: var(--gray-700);">Scale Descriptor:</strong> ${feedback.descriptor}
+      </div>
+    `;
+  }
+
   if (feedback.strengths && feedback.strengths.length > 0) {
     html += `
       <div class="feedback-section">
@@ -442,6 +451,25 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ===== Teacher Settings Access (hidden from students) =====
+// Access via Ctrl+Shift+S or by navigating to #settings in the URL
+const TEACHER_PASSWORD = 'teacher2024';
+let settingsUnlocked = false;
+
+function openSettings() {
+  if (settingsUnlocked) {
+    navigateTo('settings');
+    return;
+  }
+  const pwd = prompt('Enter the teacher password to access settings:');
+  if (pwd === TEACHER_PASSWORD) {
+    settingsUnlocked = true;
+    navigateTo('settings');
+  } else if (pwd !== null) {
+    alert('Incorrect password.');
+  }
+}
+
 // ===== Initialisation =====
 document.addEventListener('DOMContentLoaded', function() {
   // Render model essays
@@ -455,7 +483,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Handle URL hash navigation
   const hash = window.location.hash.replace('#', '');
-  if (hash && document.getElementById(hash)) {
+  if (hash === 'settings') {
+    openSettings();
+  } else if (hash && document.getElementById(hash)) {
     navigateTo(hash);
   }
+
+  // Keyboard shortcut: Ctrl+Shift+S opens settings
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+      e.preventDefault();
+      openSettings();
+    }
+  });
 });
