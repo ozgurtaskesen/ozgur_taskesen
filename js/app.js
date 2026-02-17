@@ -122,9 +122,17 @@ function closeModalOverlay(event) {
   }
 }
 
-// Close modal on Escape key
+// Close modal/popup on Escape key
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') {
+    // Close suggestion popup first if open, then essay modal
+    const popup = document.getElementById('suggestionPopupOverlay');
+    if (popup && popup.classList.contains('open')) {
+      closeSuggestionPopup();
+    } else {
+      closeModal();
+    }
+  }
 });
 
 // ===== Language Toolkit =====
@@ -224,8 +232,12 @@ function checkEssay() {
   }, 1500);
 }
 
+// ===== Sentence Alternatives (for popup) =====
+let currentSentenceAlternatives = [];
+
 function displayResults(result) {
-  const { scores, correctedEssay, feedback } = result;
+  const { scores, correctedEssay, feedback, sentenceAlternatives } = result;
+  currentSentenceAlternatives = sentenceAlternatives || [];
 
   // Hide quick reference, show results
   document.getElementById('quickRef').style.display = 'none';
@@ -307,6 +319,54 @@ function displayFeedback(elementId, feedback) {
 function hideResults() {
   document.getElementById('quickRef').style.display = 'block';
   document.getElementById('checkerResults').classList.remove('active');
+}
+
+// ===== Suggestion Popup for Alternative Sentences =====
+function showSuggestionPopup(index) {
+  const alt = currentSentenceAlternatives[index];
+  if (!alt) return;
+
+  const overlay = document.getElementById('suggestionPopupOverlay');
+  const body = document.getElementById('suggestionPopupBody');
+
+  let html = '';
+
+  // Original sentence (in red box)
+  html += `<div class="suggestion-label original-label">Original Sentence</div>`;
+  html += `<div class="suggestion-original">${escapeHtml(alt.original)}</div>`;
+
+  // Suggested alternative (in green box) - only if we could generate a correction
+  if (alt.corrected && alt.corrected !== alt.original) {
+    html += `<div class="suggestion-label alternative-label">Suggested Alternative</div>`;
+    html += `<div class="suggestion-alternative">${escapeHtml(alt.corrected)}</div>`;
+  }
+
+  // List of errors found
+  if (alt.errors && alt.errors.length > 0) {
+    html += `<div class="suggestion-errors">`;
+    html += `<strong>Issues found:</strong>`;
+    html += `<ul>`;
+    for (const err of alt.errors) {
+      html += `<li>${escapeHtml(err)}</li>`;
+    }
+    html += `</ul>`;
+    html += `</div>`;
+  }
+
+  body.innerHTML = html;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSuggestionPopup() {
+  document.getElementById('suggestionPopupOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeSuggestionPopupOverlay(event) {
+  if (event.target === event.currentTarget) {
+    closeSuggestionPopup();
+  }
 }
 
 // ===== Essay Submission (via Google Form) =====

@@ -200,8 +200,14 @@ const AIChecker = {
       total: contentResult.score + orgResult.score + grammarResult.score + vocabResult.score
     };
 
-    // Build corrected essay with highlights
-    const correctedEssay = this.buildCorrectedEssay(text, paragraphs, grammarResult.errors, orgResult.issues, contentResult.issues);
+    // Generate sentence alternatives for popup
+    const sentenceAlternatives = this.generateSentenceAlternatives(text, grammarResult.errors);
+
+    // Build corrected essay with highlights (red errors, green vocab, yellow underdeveloped)
+    const correctedEssay = this.buildCorrectedEssay(
+      text, paragraphs, grammarResult.errors, orgResult.issues, contentResult.issues,
+      vocabResult.advancedPositions, contentResult.underdevelopedParagraphs, sentenceAlternatives
+    );
 
     // Build feedback with scale descriptors
     const feedback = {
@@ -211,7 +217,7 @@ const AIChecker = {
       vocabulary: this.buildFeedbackWithDescriptor('vocabulary', vocabResult.score, vocabResult.feedback)
     };
 
-    return { scores, correctedEssay, feedback };
+    return { scores, correctedEssay, feedback, sentenceAlternatives };
   },
 
   // ===== Build feedback object with the rubric descriptor prepended =====
@@ -531,7 +537,17 @@ const AIChecker = {
       feedback.improvements.push("Continue building your vocabulary at B1+/B2 level to achieve a wider and more appropriate range.");
     }
 
-    return { score, feedback, rangeBand, appropriatenessBand };
+    // Track positions of correctly used advanced vocabulary for green highlighting
+    const advancedPositions = [];
+    for (const word of usedAdvanced) {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        advancedPositions.push({ start: match.index, end: match.index + match[0].length, word: match[0] });
+      }
+    }
+
+    return { score, feedback, rangeBand, appropriatenessBand, advancedPositions };
   },
 
   // =====================================================================
@@ -589,6 +605,7 @@ const AIChecker = {
     // Count body paragraph development
     let wellDevelopedBodies = 0;
     let underdevelopedBodies = 0;
+    const underdevelopedParagraphs = []; // Track indices of underdeveloped paragraphs
     const bodyParagraphs = paragraphs.slice(1, paragraphs.length >= 4 ? -1 : paragraphs.length);
 
     for (let i = 0; i < bodyParagraphs.length; i++) {
@@ -600,6 +617,7 @@ const AIChecker = {
         wellDevelopedBodies++;
       } else if (paraSentences.length < 2 || paraWords.length < 30) {
         underdevelopedBodies++;
+        underdevelopedParagraphs.push(i + 1); // actual paragraph index (body paras start at index 1)
         issues.push({ type: "content", message: `Body paragraph ${i + 1} needs more development. Expand with explanations, evidence, or examples to justify your point.`, paragraph: i + 1 });
       }
     }
@@ -700,7 +718,7 @@ const AIChecker = {
       feedback.improvements.push("Continue practising to deepen the development and justification of your ideas.");
     }
 
-    return { score, issues, feedback, relevanceBand, developmentBand };
+    return { score, issues, feedback, relevanceBand, developmentBand, underdevelopedParagraphs };
   },
 
   // =====================================================================
@@ -902,38 +920,153 @@ const AIChecker = {
     return overlap / Math.max(words1.size, words2.size);
   },
 
+  // ===== Generate Sentence Alternatives for Popup =====
+  generateSentenceAlternatives(text, errors) {
+    const sentenceRegex = /[^.!?]*[.!?]+/g;
+    const sentences = [];
+    let match;
+    while ((match = sentenceRegex.exec(text)) !== null) {
+      sentences.push({ text: match[0], start: match.index, end: match.index + match[0].length });
+    }
+
+    const alternatives = [];
+    for (const sent of sentences) {
+      const sentErrors = errors.filter(e => e.start >= sent.start && e.end <= sent.end);
+      if (sentErrors.length === 0) continue;
+
+      // Generate corrected version by applying extractable fixes
+      let corrected = sent.text;
+      const sorted = [...sentErrors].sort((a, b) => (b.start - sent.start) - (a.start - sent.start));
+      let hasFixableErrors = false;
+
+      for (const err of sorted) {
+        const localStart = err.start - sent.start;
+        const localEnd = err.end - sent.start;
+        const fix = this.extractCorrection(err.message, err.original);
+        if (fix) {
+          corrected = corrected.substring(0, localStart) + fix + corrected.substring(localEnd);
+          hasFixableErrors = true;
+        }
+      }
+
+      alternatives.push({
+        original: sent.text.trim(),
+        corrected: hasFixableErrors ? corrected.trim() : null,
+        errors: [...new Set(sentErrors.map(e => e.message))],
+        start: sent.start,
+        end: sent.end
+      });
+    }
+
+    return alternatives;
+  },
+
+  // ===== Extract a direct correction from an error message =====
+  extractCorrection(message, original) {
+    // "Should be 'should have'"
+    const shouldBeMatch = message.match(/[Ss]hould be '([^']+)'/);
+    if (shouldBeMatch) return shouldBeMatch[1];
+
+    // "Use 'an' before..."
+    const useMatch = message.match(/[Uu]se '([^']+)'\s+before/);
+    if (useMatch) {
+      // Replace the article: "a hour" -> "an hour"
+      const article = original.trim().split(/\s+/)[0];
+      return original.replace(new RegExp(`^${article}`, 'i'), useMatch[1]);
+    }
+
+    // "Use 'a' before..."
+    const useAMatch = message.match(/[Uu]se '([^']+)'\s+before/);
+    if (useAMatch && !useMatch) return null;
+
+    // "Did you mean 'there'?"
+    const meanMatch = message.match(/[Dd]id you mean '([^']+)'/);
+    if (meanMatch) return meanMatch[1];
+
+    // "remove 'back'" / "remove 'again'"
+    const removeMatch = message.match(/remove '([^']+)'/i);
+    if (removeMatch) {
+      return original.replace(new RegExp(`\\s*\\b${removeMatch[1]}\\b`, 'i'), '').trim();
+    }
+
+    return null;
+  },
+
   // ===== Build Corrected Essay with Highlighted Errors =====
-  buildCorrectedEssay(text, paragraphs, grammarErrors, orgIssues, contentIssues) {
+  buildCorrectedEssay(text, paragraphs, grammarErrors, orgIssues, contentIssues, advancedVocabPositions, underdevelopedParagraphs, sentenceAlternatives) {
     let html = '';
     const paragraphLabels = ['Introduction', 'Body Paragraph 1', 'Body Paragraph 2', 'Conclusion'];
+    advancedVocabPositions = advancedVocabPositions || [];
+    underdevelopedParagraphs = underdevelopedParagraphs || [];
+    sentenceAlternatives = sentenceAlternatives || [];
+
+    // Use offset tracking to avoid incorrect indexOf matches
+    let searchOffset = 0;
 
     for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
       const para = paragraphs[pIdx];
       const label = paragraphLabels[pIdx] || `Paragraph ${pIdx + 1}`;
       const labelClass = pIdx === 0 ? 'intro' : (pIdx === paragraphs.length - 1 && pIdx >= 3 ? 'conclusion' : 'body');
 
-      // Find grammar errors in this paragraph
-      const paraStart = text.indexOf(para);
+      // Find paragraph position with offset tracking
+      const paraStart = text.indexOf(para, searchOffset);
+      searchOffset = paraStart + para.length;
+
+      // Find grammar errors in this paragraph (adjusted to local positions)
       const paraErrors = grammarErrors.filter(e => e.start >= paraStart && e.end <= paraStart + para.length)
         .map(e => ({ ...e, start: e.start - paraStart, end: e.end - paraStart }));
 
-      // Check for organisation/content issues for this paragraph
+      // Find advanced vocab positions in this paragraph (adjusted to local positions)
+      const paraVocab = advancedVocabPositions.filter(v => v.start >= paraStart && v.end <= paraStart + para.length)
+        .map(v => ({ ...v, start: v.start - paraStart, end: v.end - paraStart }));
+
+      // Check for organisation/content issues
       const paraOrgIssues = orgIssues.filter(i => i.paragraph === pIdx);
       const paraContentIssues = contentIssues.filter(i => i.paragraph === pIdx);
       const hasIssues = paraOrgIssues.length > 0 || paraContentIssues.length > 0;
+      const isUnderdeveloped = underdevelopedParagraphs.includes(pIdx);
 
-      let highlightedText = this.applyHighlights(para, paraErrors);
-      const issueClass = hasIssues ? (paraOrgIssues.length > 0 ? ' org-issue' : ' content-issue') : '';
+      // Apply multi-type highlights (red errors + green vocab)
+      let highlightedText = this.applyHighlightsMulti(para, paraErrors, paraVocab);
 
-      html += `<div class="essay-paragraph${issueClass}">`;
+      // Determine paragraph CSS class
+      let paraClass = 'essay-paragraph';
+      if (isUnderdeveloped) {
+        paraClass += ' expansion-needed';
+      } else if (paraOrgIssues.length > 0) {
+        paraClass += ' org-issue';
+      } else if (paraContentIssues.length > 0) {
+        paraClass += ' content-issue';
+      }
+
+      html += `<div class="${paraClass}">`;
       html += `<span class="paragraph-label ${labelClass}">${label}</span><br>`;
       html += highlightedText;
 
+      // Yellow arrow for underdeveloped paragraphs
+      if (isUnderdeveloped) {
+        html += `<div class="expansion-arrow">Add more details, examples, or explanations here to fully develop and justify your argument.</div>`;
+      }
+
+      // Show org/content issues
       if (hasIssues) {
         for (const issue of [...paraOrgIssues, ...paraContentIssues]) {
           html += `<div style="font-size:0.8rem; color:var(--danger); margin-top:0.5rem; font-family:var(--font-sans); font-style:italic;">&#9888; ${issue.message}</div>`;
         }
       }
+
+      // Add clickable links for sentence alternatives in this paragraph
+      const paraSentAlts = sentenceAlternatives.filter(a => a.start >= paraStart && a.end <= paraStart + para.length);
+      if (paraSentAlts.length > 0) {
+        html += `<div style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px dashed var(--gray-300);">`;
+        for (const alt of paraSentAlts) {
+          const altIdx = sentenceAlternatives.indexOf(alt);
+          const preview = alt.original.length > 60 ? alt.original.substring(0, 57) + '...' : alt.original;
+          html += `<div class="alt-sentence-link" onclick="showSuggestionPopup(${altIdx})">&#9998; <span>Click for alternative: &ldquo;${this.escapeHtml(preview)}&rdquo;</span></div>`;
+        }
+        html += `</div>`;
+      }
+
       html += `</div>`;
     }
 
@@ -951,27 +1084,57 @@ const AIChecker = {
     return html;
   },
 
-  // ===== Apply Red Highlights to Text =====
-  applyHighlights(text, errors) {
-    if (errors.length === 0) return this.escapeHtml(text);
+  // ===== Apply Multi-type Highlights (Red errors + Green vocab) =====
+  applyHighlightsMulti(text, errors, vocabPositions) {
+    // Merge all highlights, giving priority to errors over vocab
+    const highlights = [];
 
-    const sorted = [...errors].sort((a, b) => a.start - b.start);
-    const filtered = [];
-    let lastEnd = -1;
-    for (const err of sorted) {
-      if (err.start >= lastEnd) {
-        filtered.push(err);
-        lastEnd = err.end;
+    // Add errors (priority 1 - red)
+    for (const err of errors) {
+      highlights.push({ start: err.start, end: err.end, type: 'error', message: err.message });
+    }
+
+    // Add vocab (priority 2 - green) - skip if overlapping with any error
+    for (const vp of (vocabPositions || [])) {
+      const overlaps = errors.some(e =>
+        (vp.start >= e.start && vp.start < e.end) ||
+        (vp.end > e.start && vp.end <= e.end) ||
+        (e.start >= vp.start && e.start < vp.end)
+      );
+      if (!overlaps) {
+        highlights.push({ start: vp.start, end: vp.end, type: 'vocab', word: vp.word });
       }
     }
 
+    if (highlights.length === 0) return this.escapeHtml(text);
+
+    // Sort by start position
+    highlights.sort((a, b) => a.start - b.start);
+
+    // Remove overlaps (keep earlier ones)
+    const filtered = [];
+    let lastEnd = -1;
+    for (const h of highlights) {
+      if (h.start >= lastEnd) {
+        filtered.push(h);
+        lastEnd = h.end;
+      }
+    }
+
+    // Build HTML
     let result = '';
     let pos = 0;
-    for (const err of filtered) {
-      result += this.escapeHtml(text.substring(pos, err.start));
-      const errText = this.escapeHtml(text.substring(err.start, err.end));
-      result += `<span class="error-highlight" data-tooltip="${this.escapeHtml(err.message)}">${errText}</span>`;
-      pos = err.end;
+    for (const h of filtered) {
+      result += this.escapeHtml(text.substring(pos, h.start));
+      const hText = this.escapeHtml(text.substring(h.start, h.end));
+
+      if (h.type === 'error') {
+        result += `<span class="error-highlight" data-tooltip="${this.escapeHtml(h.message)}">${hText}</span>`;
+      } else if (h.type === 'vocab') {
+        result += `<span class="vocab-highlight" title="Good use of upper-intermediate vocabulary">${hText}</span>`;
+      }
+
+      pos = h.end;
     }
     result += this.escapeHtml(text.substring(pos));
     return result;
