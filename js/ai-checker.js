@@ -191,7 +191,6 @@ const AIChecker = {
     { pattern: /^(In addition|On the other hand|As a result|For example|For instance|In contrast|In conclusion|To sum up|All in all|On balance|In my opinion|In my view|To begin with|First of all|On the contrary|In other words|As a consequence)\s+[a-z]/gm, correction: "Add a comma after this introductory phrase", type: "punctuation" },
 
     // === PUNCTUATION ERRORS ===
-    { pattern: /\s+[,\.;:!?]/g, correction: "Remove the space before punctuation", type: "punctuation" },
     { pattern: /[,\.;:!?]{2,}/g, correction: "Remove duplicate punctuation marks", type: "punctuation" },
 
     // === REDUNDANCY ===
@@ -450,36 +449,41 @@ const AIChecker = {
     // Final score = min of two dimensions (per rubric NB)
     const score = Math.min(accuracyBand, rangeBand);
 
-    // ----- Build feedback -----
+    // ----- Build feedback using rubric descriptor language -----
     const feedback = { strengths: [], improvements: [] };
 
-    if (accuracyBand >= 4) {
-      feedback.strengths.push("Good grammatical control overall. Errors, where present, do not hinder understanding.");
-    } else if (accuracyBand === 3) {
-      feedback.strengths.push("Sufficiently accurate grammar; meaning is generally clear despite some errors.");
-    }
-
-    if (rangeBand >= 4) {
-      feedback.strengths.push("A good range of structures is used, including some complex structures (e.g. subordinate clauses, passive voice, conditionals).");
-    } else if (rangeBand === 3) {
-      feedback.strengths.push("An adequate range of grammatical structures is demonstrated.");
+    // Strengths based on score (aligned with scale descriptors)
+    if (score >= 5) {
+      feedback.strengths.push("High degree of grammatical control over a wide range of appropriate structures.");
+      if (complexCount > 0) {
+        feedback.strengths.push("Complex structures are evident (e.g. subordinate clauses, passive voice, conditionals) and errors do not hinder understanding.");
+      }
+    } else if (score === 4) {
+      feedback.strengths.push("Mostly accurate use of a good range of appropriate structures.");
+    } else if (score === 3) {
+      feedback.strengths.push("Sufficiently accurate use of an adequate range of structures; meaning is not obscured despite some language errors.");
     }
 
     if (starterVariety >= 0.6 && sentences.length > 4) {
       feedback.strengths.push("Good variety in sentence beginnings.");
     }
 
+    // Improvements based on score (aligned with scale descriptors)
     if (errors.length > 0) {
       const errorTypes = [...new Set(errors.map(e => e.message))];
       feedback.improvements.push(`${errors.length} language error(s) detected. Key issues: ${errorTypes.slice(0, 3).join("; ")}.`);
     }
 
-    if (rangeBand < 3) {
-      feedback.improvements.push("Try to use a wider range of structures. Include complex sentences with subordinate clauses (e.g. 'Although...', 'While...'), passive voice, and conditional forms to demonstrate range.");
+    if (score <= 2 && accuracyBand <= 2) {
+      feedback.improvements.push("There are basic language errors which at times may obscure meaning. Focus on accuracy in subject-verb agreement, articles, and prepositions.");
     }
 
-    if (accuracyBand <= 2 && basicErrors.length > 0) {
-      feedback.improvements.push("Several basic grammar errors were found which may affect clarity. Focus on subject-verb agreement, correct article usage, and preposition choice.");
+    if (score <= 1 && accuracyBand <= 1) {
+      feedback.improvements.push("Basic and frequent language errors often obscure meaning. Careful proofreading and revision of fundamental grammar rules is needed.");
+    }
+
+    if (rangeBand <= 2) {
+      feedback.improvements.push("The range of structures used is inadequate. Try to include complex sentences with subordinate clauses (e.g. 'Although...', 'While...'), passive voice, and conditional forms to show a wider range.");
     }
 
     if (avgLen > 28) {
@@ -487,7 +491,7 @@ const AIChecker = {
     }
 
     if (avgLen < 8 && sentences.length > 4) {
-      feedback.improvements.push("Many sentences are very short. Combine ideas using conjunctions and subordinators to show a better range of structures.");
+      feedback.improvements.push("Many sentences are very short. Combine ideas using conjunctions and subordinators to demonstrate a better range of structures.");
     }
 
     if (starterVariety < 0.5 && sentences.length > 4) {
@@ -498,7 +502,7 @@ const AIChecker = {
       feedback.strengths.push("The essay demonstrates an attempt to use English grammatical structures.");
     }
     if (feedback.improvements.length === 0) {
-      feedback.improvements.push("Continue practising complex structures to further strengthen grammatical range.");
+      feedback.improvements.push("Continue practising complex structures to further strengthen grammatical range and control.");
     }
 
     return { errors, score, feedback, accuracyBand, rangeBand };
@@ -580,45 +584,37 @@ const AIChecker = {
     // Final score = min of two dimensions (per rubric NB)
     const score = Math.min(rangeBand, appropriatenessBand);
 
-    // ----- Build feedback -----
+    // ----- Build feedback using rubric descriptor language -----
     const feedback = { strengths: [], improvements: [] };
 
-    if (rangeBand >= 4) {
-      feedback.strengths.push(`Good range of vocabulary demonstrated (${usedAdvanced.length} upper-intermediate words/phrases detected, e.g. ${usedAdvanced.slice(0, 4).join(", ")}).`);
-    } else if (rangeBand === 3) {
-      feedback.strengths.push(`Sufficient vocabulary range for B1+ level (${usedAdvanced.length} upper-intermediate words/phrases used).`);
-    }
-
-    if (appropriatenessBand >= 4) {
-      feedback.strengths.push("Vocabulary is used mostly appropriately with very few instances of misuse.");
-    } else if (appropriatenessBand === 3) {
-      feedback.strengths.push("Vocabulary is used fairly appropriately overall.");
+    // Strengths based on score (aligned with scale descriptors)
+    if (score >= 5) {
+      feedback.strengths.push("Wide range of vocabulary used appropriately with almost no instances of misuse.");
+      if (usedAdvanced.length > 0) {
+        feedback.strengths.push(`Upper-intermediate vocabulary used effectively (e.g. ${usedAdvanced.slice(0, 4).join(", ")}).`);
+      }
+    } else if (score === 4) {
+      feedback.strengths.push(`Good range of vocabulary used mostly appropriately with occasional instances of misuse (${usedAdvanced.length} upper-intermediate words/phrases detected).`);
+    } else if (score === 3) {
+      feedback.strengths.push(`Sufficient range of vocabulary used fairly appropriately (${usedAdvanced.length} upper-intermediate words/phrases used), although some errors are apparent.`);
     }
 
     if (ttr >= 0.55) {
       feedback.strengths.push("Good lexical diversity throughout the essay.");
     }
 
-    // Check cohesive device vocabulary
-    const usedLinkers = [];
-    for (const [category, linkerList] of Object.entries(this.cohesiveDevices)) {
-      for (const linker of linkerList) {
-        if (lowerText.includes(linker)) {
-          usedLinkers.push({ linker, category });
-        }
-      }
-    }
-    if (usedLinkers.length >= 5) {
-      feedback.strengths.push(`Good use of linking expressions (${usedLinkers.length} different connectors used).`);
+    // Improvements based on score (aligned with scale descriptors)
+    if (score <= 2 && rangeBand <= 2) {
+      feedback.improvements.push("The range of vocabulary is inadequate. Try incorporating more upper-intermediate words such as 'significant', 'consequently', 'beneficial', 'contribute', 'demonstrate', and 'perspective' to widen your lexical range.");
     }
 
-    if (rangeBand <= 2) {
-      feedback.improvements.push("Your vocabulary range is limited. Try incorporating more upper-intermediate words such as 'significant', 'consequently', 'beneficial', 'contribute', 'demonstrate', and 'perspective' to widen your lexical range.");
+    if (score <= 1) {
+      feedback.improvements.push("There are serious problems in vocabulary accuracy and/or usage. Focus on learning and correctly using topic-appropriate vocabulary at B1+/B2 level.");
     }
 
     if (overusedBasic.length > 0) {
       const basics = overusedBasic.map(b => `'${b.word}' (${b.count}x)`).join(", ");
-      feedback.improvements.push(`Some basic words are overused: ${basics}. Replace these with more precise alternatives (e.g. 'good' \u2192 'beneficial/effective', 'bad' \u2192 'detrimental/harmful', 'very' \u2192 'considerably/particularly').`);
+      feedback.improvements.push(`Some basic words are overused: ${basics}. This indicates instances of misuse in word choice. Replace with more precise alternatives (e.g. 'good' \u2192 'beneficial/effective', 'bad' \u2192 'detrimental/harmful', 'very' \u2192 'considerably/particularly').`);
     }
 
     if (overusedWords.length > 0) {
@@ -626,12 +622,8 @@ const AIChecker = {
       feedback.improvements.push(`Some content words are repeated too frequently: ${repeated}. Use synonyms or rephrase to demonstrate lexical variety.`);
     }
 
-    if (ttr < 0.42) {
+    if (ttr < 0.42 && score > 1) {
       feedback.improvements.push("Overall lexical diversity is low. Try using a wider variety of words to express your ideas.");
-    }
-
-    if (usedLinkers.length < 3) {
-      feedback.improvements.push("Use more linking expressions and connectors to improve cohesion and show vocabulary range.");
     }
 
     if (feedback.strengths.length === 0) {
@@ -767,43 +759,52 @@ const AIChecker = {
     // Final score = min of two dimensions (per rubric NB)
     const score = Math.min(relevanceBand, developmentBand);
 
-    // ----- Build feedback -----
+    // ----- Build feedback using rubric descriptor language -----
     const feedback = { strengths: [], improvements: [] };
 
-    if (relevanceBand >= 4) {
-      feedback.strengths.push("The essay is a relevant and focused response to the prompt.");
-    } else if (relevanceBand === 3) {
-      feedback.strengths.push("The essay is an adequate response to the prompt.");
+    // Strengths based on score (aligned with scale descriptors)
+    if (score >= 5) {
+      feedback.strengths.push("Very good response to the prompt; the passage is fully developed with respect to exemplification and details.");
+      feedback.strengths.push("Very good justification with respect to the quality of ideas.");
+    } else if (score === 4) {
+      feedback.strengths.push("Good response to the prompt; the passage is well-developed with good justification.");
+    } else if (score === 3) {
+      feedback.strengths.push("Adequate response to the prompt; the passage is adequately developed with satisfactory justification.");
     }
 
     if (hasOpinion) {
       feedback.strengths.push("Your personal opinion is clearly expressed.");
     }
 
-    if (hasExamples) {
-      feedback.strengths.push("Good use of examples to support and justify your arguments.");
+    if (hasExamples && score >= 3) {
+      feedback.strengths.push("Good use of exemplification to support your arguments.");
     }
 
-    if (hasExplanations) {
+    if (hasExplanations && score >= 3) {
       feedback.strengths.push("Ideas are supported with explanations and reasoning.");
     }
 
-    if (developmentBand >= 4) {
-      feedback.strengths.push("Arguments are well-developed with good justification and detail.");
+    // Improvements based on score (aligned with scale descriptors)
+    if (score <= 2 && developmentBand <= 2) {
+      feedback.improvements.push("There is some development of ideas but with inadequate justification. Strengthen your arguments with concrete examples, explanations, and evidence.");
     }
 
-    if (wellDevelopedBodies >= 2) {
-      feedback.strengths.push("Both body paragraphs are fully developed with sufficient exemplification.");
+    if (score <= 2 && relevanceBand <= 2) {
+      feedback.improvements.push("Content is not always clear and/or partly irrelevant to the prompt. Ensure all arguments directly address the question.");
     }
 
-    if (!hasExamples && !hasExplanations) {
-      feedback.improvements.push("Your essay lacks concrete examples and detailed justification. Use phrases like 'For example', 'This is because', or 'As a result' to support and develop your arguments.");
-    } else if (!hasExamples) {
-      feedback.improvements.push("Include specific examples using 'For example', 'For instance', or 'such as' to strengthen your justification.");
+    if (score <= 1 && developmentBand <= 1) {
+      feedback.improvements.push("Poor development of ideas with little attempt at justification. The passage may be almost completely repetitious and/or incomplete.");
     }
 
     if (repetitionCount >= 2) {
-      feedback.improvements.push("There is noticeable repetition of ideas. Each paragraph should introduce distinct points with fresh justification rather than restating the same ideas.");
+      feedback.improvements.push("There is frequent repetition of ideas, which weakens the justification. Each paragraph should introduce distinct points rather than restating the same ideas.");
+    }
+
+    if (!hasExamples && !hasExplanations && score >= 2) {
+      feedback.improvements.push("Your essay lacks exemplification and details. Use phrases like 'For example', 'This is because', or 'As a result' to develop and justify your arguments.");
+    } else if (!hasExamples && score >= 2) {
+      feedback.improvements.push("Include specific examples using 'For example', 'For instance', or 'such as' to strengthen the exemplification and details in your passage.");
     }
 
     for (const issue of issues) {
@@ -954,27 +955,23 @@ const AIChecker = {
     // Final score = min of two dimensions (per rubric NB)
     const score = Math.min(flowBand, cohesionBand);
 
-    // ----- Build feedback -----
+    // ----- Build feedback using rubric descriptor language -----
     const feedback = { strengths: [], improvements: [] };
 
-    if (flowBand >= 4) {
-      feedback.strengths.push("The text flows in a meaningful and logical way with clear paragraph structure.");
-    } else if (flowBand === 3) {
-      feedback.strengths.push("Information is ordered meaningfully and logically overall.");
+    // Strengths based on score (aligned with scale descriptors)
+    if (score >= 5) {
+      feedback.strengths.push("Very fluent passage; the text flows in a meaningful and logical way.");
+      feedback.strengths.push(`All aspects of cohesion managed well (${totalDeviceCount} cohesive devices across ${deviceCategories.size} categories: ${[...deviceCategories].slice(0, 4).join(", ")}; linkers, referencing, and punctuation).`);
+    } else if (score === 4) {
+      feedback.strengths.push("Mostly fluent passage; information provided mostly flows in a meaningful and logical way.");
+      feedback.strengths.push(`A range of cohesive devices used appropriately (${totalDeviceCount} devices across ${deviceCategories.size} categories), although there may be some under/over-use.`);
+    } else if (score === 3) {
+      feedback.strengths.push("Adequately fluent passage; information is ordered meaningfully and logically.");
+      feedback.strengths.push("Cohesive devices are used, although cohesion within and/or between parts of the text may be faulty at times.");
     }
 
     if (hasFourParagraphs) {
       feedback.strengths.push("Correct 4-paragraph structure (introduction, 2 body paragraphs, conclusion).");
-    }
-
-    if (cohesionBand >= 4) {
-      feedback.strengths.push(`A good range of cohesive devices used appropriately (${totalDeviceCount} devices across ${deviceCategories.size} categories: ${[...deviceCategories].slice(0, 4).join(", ")}).`);
-    } else if (cohesionBand === 3) {
-      feedback.strengths.push("Cohesive devices are present and generally support the flow of ideas.");
-    }
-
-    if (paragraphsBalanced) {
-      feedback.strengths.push("Body paragraphs are well-balanced in length.");
     }
 
     if (hasThesis) {
@@ -985,25 +982,38 @@ const AIChecker = {
       feedback.strengths.push("The conclusion is properly signalled with a concluding expression.");
     }
 
+    if (paragraphsBalanced && score >= 3) {
+      feedback.strengths.push("Body paragraphs are well-balanced in length.");
+    }
+
+    // Improvements based on score (aligned with scale descriptors)
+    if (score <= 2 && flowBand <= 2) {
+      feedback.improvements.push("The passage lacks fluency despite some evidence of organisation. There is \"jumpiness\" in places \u2014 ensure ideas progress logically from one to the next.");
+    }
+
+    if (score <= 2 && cohesionBand <= 2) {
+      feedback.improvements.push("Inappropriate, inadequate, or overuse of cohesive devices leads to problems with transitions between ideas. Use a wider variety of linkers (addition, contrast, cause/effect, exemplification, conclusion).");
+    }
+
+    if (score <= 1 && flowBand <= 1) {
+      feedback.improvements.push("Almost complete lack of fluency. Ensure each paragraph has a clear role and the text flows logically.");
+    }
+
+    if (score <= 1 && cohesionBand <= 1) {
+      feedback.improvements.push("The limited range of cohesive devices does not provide a logical relationship or show a clear transition between ideas.");
+    }
+
     for (const issue of issues) {
       if (!feedback.improvements.includes(issue.message)) {
         feedback.improvements.push(issue.message);
       }
     }
 
-    if (cohesionBand <= 2 && !underuseDetected && !overuseDetected) {
-      feedback.improvements.push("Use a wider variety of cohesive devices (addition, contrast, cause/effect, exemplification, conclusion) to strengthen transitions between ideas.");
-    }
-
-    if (flowBand <= 2 && !issues.some(i => i.message.includes('paragraph'))) {
-      feedback.improvements.push("The essay lacks fluency. Ensure each paragraph has a clear role and ideas progress logically from one to the next.");
-    }
-
     if (feedback.strengths.length === 0) {
       feedback.strengths.push("There is some evidence of an attempt to organise the essay.");
     }
     if (feedback.improvements.length === 0) {
-      feedback.improvements.push("Continue developing your use of cohesive devices and paragraph organisation to achieve greater fluency.");
+      feedback.improvements.push("Continue developing your use of cohesive devices (linkers, referencing, punctuation) and paragraph organisation to achieve greater fluency.");
     }
 
     return { score, issues, feedback, flowBand, cohesionBand };
@@ -1109,11 +1119,6 @@ const AIChecker = {
     if (/[Aa]dd a comma after/.test(message)) {
       // Add comma after the matched introductory word/phrase
       return original.trimEnd() + ',';
-    }
-
-    // "Remove the space before punctuation"
-    if (/[Rr]emove the space before punctuation/.test(message)) {
-      return original.replace(/\s+([,\.;:!?])/g, '$1');
     }
 
     // "Remove duplicate punctuation marks"
