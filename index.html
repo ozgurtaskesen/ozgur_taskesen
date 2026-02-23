@@ -23,6 +23,7 @@
         <li><a href="#toolkit" data-page="toolkit" onclick="navigateTo('toolkit')">Language Toolkit</a></li>
         <li><a href="#organisation" data-page="organisation" onclick="navigateTo('organisation')">Organisation</a></li>
         <li><a href="#write" data-page="write" onclick="navigateTo('write')">Write &amp; Submit</a></li>
+        <li><a href="#rating" data-page="rating" onclick="navigateTo('rating')">Rating Scale</a></li>
       </ul>
     </div>
   </nav>
@@ -36,22 +37,22 @@
         <h1>Master Opinion Essay Writing</h1>
         <p>A comprehensive platform for CEFR B1+ learners to study, practise, and perfect their opinion essay writing skills with AI-powered feedback.</p>
         <div class="hero-features">
-          <div class="hero-feature">
+          <div class="hero-feature hero-feature-link" onclick="navigateTo('essays')">
             <div class="icon">&#128214;</div>
             <h3>Model Essays</h3>
             <p>Study well-structured opinion essays at ~300 words</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature hero-feature-link" onclick="navigateTo('toolkit')">
             <div class="icon">&#128295;</div>
             <h3>Language Toolkit</h3>
             <p>Linkers and phrases for 4 key relationship types</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature hero-feature-link" onclick="navigateTo('organisation')">
             <div class="icon">&#128202;</div>
             <h3>Organisation Guide</h3>
             <p>Learn acceptable essay structures and conventions</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature hero-feature-link" onclick="navigateTo('write')">
             <div class="icon">&#9997;</div>
             <h3>Write &amp; Get Feedback</h3>
             <p>Submit essays and receive AI-powered analysis and grading</p>
@@ -65,25 +66,25 @@
       </div>
 
       <div class="org-grid">
-        <div class="card">
+        <div class="card step-card" onclick="navigateTo('essays')">
           <div class="card-header"><h3>Step 1: Study</h3></div>
           <div class="card-body">
             <p>Read the <strong>Model Essays</strong> to see how a well-written opinion essay is structured. Notice the introduction, body paragraphs, and conclusion.</p>
           </div>
         </div>
-        <div class="card">
+        <div class="card step-card" onclick="navigateTo('toolkit')">
           <div class="card-header"><h3>Step 2: Learn the Language</h3></div>
           <div class="card-body">
             <p>Explore the <strong>Language Toolkit</strong> for useful linkers, phrases, and functional language organised by four relationship types.</p>
           </div>
         </div>
-        <div class="card">
+        <div class="card step-card" onclick="navigateTo('organisation')">
           <div class="card-header"><h3>Step 3: Understand Organisation</h3></div>
           <div class="card-body">
             <p>Review the <strong>Organisation Guide</strong> to learn how to arrange your ideas effectively in each paragraph of your essay.</p>
           </div>
         </div>
-        <div class="card">
+        <div class="card step-card" onclick="navigateTo('write')">
           <div class="card-header"><h3>Step 4: Write &amp; Submit</h3></div>
           <div class="card-body">
             <p>Go to the <strong>Write &amp; Submit</strong> section, choose a topic, write your essay, and submit it for AI checking and rater review.</p>
@@ -790,6 +791,166 @@
             <div style="text-align: center; margin-top: 1rem;">
               <button class="btn btn-secondary" onclick="hideResults()">Write Another Essay</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RATING SCALE PAGE ===== -->
+    <section id="rating" class="page-section">
+      <div class="section-header">
+        <h2>Upper-Intermediate CAT Analytic Writing Scale</h2>
+        <p>Your essay is graded on 4 criteria, each scored 0&ndash;5. Total: 20 points. Review the descriptors below to understand what each score means.</p>
+      </div>
+
+      <div class="rating-scale-note">
+        <strong>Important:</strong> Each category has two dimensions. Your score is based on the <em>lower</em> of the two dimensions. For example, if your grammar accuracy is a 4 but your range of structures is a 2, your grammar score will be 2.
+      </div>
+
+      <!-- GRAMMAR -->
+      <div class="rating-category">
+        <div class="rating-category-header grammar-header">
+          <span class="rating-category-icon">&#9998;</span>
+          <div>
+            <h3>Grammar</h3>
+            <p>Accuracy (control) + Range of structures</p>
+          </div>
+        </div>
+        <div class="rating-bands">
+          <div class="rating-band band-green">
+            <div class="band-score">5</div>
+            <div class="band-text">High degree of grammatical control shown over a wide range of appropriate structures; some complex structures are evident although there may be errors in their use that do not hinder understanding.</div>
+          </div>
+          <div class="rating-band band-green">
+            <div class="band-score">4</div>
+            <div class="band-text">Mostly accurate use of a good range of appropriate structures with some minor errors.</div>
+          </div>
+          <div class="rating-band band-yellow">
+            <div class="band-score">3</div>
+            <div class="band-text">Sufficiently accurate use of an adequate range of structures with some language errors but meaning is not obscured.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">2</div>
+            <div class="band-text">Inadequate range of structures with some basic language errors which at times may obscure meaning and/or use of language below level expectations.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">1</div>
+            <div class="band-text">Poor range of structures with basic and frequent language errors which often obscure meaning.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">0</div>
+            <div class="band-text">Serious lack of language; inadequate sample for scoring.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOCABULARY -->
+      <div class="rating-category">
+        <div class="rating-category-header vocabulary-header">
+          <span class="rating-category-icon">&#128218;</span>
+          <div>
+            <h3>Vocabulary</h3>
+            <p>Lexical range + Appropriateness (usage) including spelling</p>
+          </div>
+        </div>
+        <div class="rating-bands">
+          <div class="rating-band band-green">
+            <div class="band-score">5</div>
+            <div class="band-text">Wide range of vocabulary used appropriately with almost no instances of misuse (i.e. word choice / word formation) and very few spelling mistakes.</div>
+          </div>
+          <div class="rating-band band-green">
+            <div class="band-score">4</div>
+            <div class="band-text">Good range of vocabulary used mostly appropriately with occasional instances of misuse and few spelling mistakes.</div>
+          </div>
+          <div class="rating-band band-yellow">
+            <div class="band-score">3</div>
+            <div class="band-text">Sufficient range of vocabulary used fairly appropriately although some errors are apparent and some problems in spelling.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">2</div>
+            <div class="band-text">Inadequate range of vocabulary and/or frequent inappropriate use which at times may obscure meaning, frequent problems in spelling.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">1</div>
+            <div class="band-text">Poor range of vocabulary with serious problems in accuracy and/or usage, major problems with spelling.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">0</div>
+            <div class="band-text">Almost no control of vocabulary; inadequate sample for scoring.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="rating-category">
+        <div class="rating-category-header content-header">
+          <span class="rating-category-icon">&#128161;</span>
+          <div>
+            <h3>Content</h3>
+            <p>Relevance of ideas + Development / justification</p>
+          </div>
+        </div>
+        <div class="rating-bands">
+          <div class="rating-band band-green">
+            <div class="band-score">5</div>
+            <div class="band-text">Very good response to the prompt; a fully developed passage (with respect to exemplification and details) with very good justification (with respect to the quality of ideas).</div>
+          </div>
+          <div class="rating-band band-green">
+            <div class="band-score">4</div>
+            <div class="band-text">Good response to the prompt; a well-developed passage with good justification.</div>
+          </div>
+          <div class="rating-band band-yellow">
+            <div class="band-score">3</div>
+            <div class="band-text">Adequate response to the prompt; an adequately developed passage with satisfactory justification.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">2</div>
+            <div class="band-text">Attempts to respond to the prompt but inadequately; some development of ideas but with inadequate justification and/or frequent repetition &mdash; content is not always clear and/or partly irrelevant.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">1</div>
+            <div class="band-text">Response is considerably irrelevant; poor development of ideas with little attempt at justification and/or almost completely repetitious and/or incomplete.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">0</div>
+            <div class="band-text">Response is completely irrelevant to the task; almost no attempt at answering the prompt.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORGANISATION -->
+      <div class="rating-category">
+        <div class="rating-category-header organisation-header">
+          <span class="rating-category-icon">&#128203;</span>
+          <div>
+            <h3>Organisation</h3>
+            <p>Flow (fluency) + Cohesion (linkers, referencing)</p>
+          </div>
+        </div>
+        <div class="rating-bands">
+          <div class="rating-band band-green">
+            <div class="band-score">5</div>
+            <div class="band-text">Very fluent passage; the text flows in a meaningful and a logical way, all aspects of cohesion managed well (i.e. linkers, referencing).</div>
+          </div>
+          <div class="rating-band band-green">
+            <div class="band-score">4</div>
+            <div class="band-text">Mostly fluent passage; information provided mostly flows in a meaningful and logical way, a range of cohesive devices used appropriately, although there may be some under/over-use.</div>
+          </div>
+          <div class="rating-band band-yellow">
+            <div class="band-score">3</div>
+            <div class="band-text">Adequately fluent passage; information is ordered meaningfully and logically, cohesive devices used although cohesion within and/or between parts of the text/sentences may be faulty at times.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">2</div>
+            <div class="band-text">Lacks fluency despite some evidence of organization; &ldquo;jumpiness&rdquo; in places; inappropriate, inadequate or overuse of cohesive devices leads to problems with transitions between ideas.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">1</div>
+            <div class="band-text">Almost complete lack of fluency; a limited range of cohesive devices and/or cohesive devices may be inaccurate, repetitive, or may not provide a logical relationship or show a clear transition between ideas.</div>
+          </div>
+          <div class="rating-band band-red">
+            <div class="band-score">0</div>
+            <div class="band-text">Very little or no control of organizational features.</div>
           </div>
         </div>
       </div>
