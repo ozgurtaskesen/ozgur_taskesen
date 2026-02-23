@@ -122,9 +122,17 @@ function closeModalOverlay(event) {
   }
 }
 
-// Close modal on Escape key
+// Close modal/popup on Escape key
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') {
+    // Close suggestion popup first if open, then essay modal
+    const popup = document.getElementById('suggestionPopupOverlay');
+    if (popup && popup.classList.contains('open')) {
+      closeSuggestionPopup();
+    } else {
+      closeModal();
+    }
+  }
 });
 
 // ===== Language Toolkit =====
@@ -224,8 +232,12 @@ function checkEssay() {
   }, 1500);
 }
 
+// ===== Sentence Alternatives (for popup) =====
+let currentSentenceAlternatives = [];
+
 function displayResults(result) {
-  const { scores, correctedEssay, feedback } = result;
+  const { scores, correctedEssay, feedback, sentenceAlternatives } = result;
+  currentSentenceAlternatives = sentenceAlternatives || [];
 
   // Hide quick reference, show results
   document.getElementById('quickRef').style.display = 'none';
@@ -270,6 +282,15 @@ function displayFeedback(elementId, feedback) {
   const el = document.getElementById(elementId);
   let html = '';
 
+  // Show the rubric scale descriptor for the awarded grade
+  if (feedback.descriptor) {
+    html += `
+      <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--gray-600); line-height: 1.5;">
+        <strong style="color: var(--gray-700);">Scale Descriptor:</strong> ${feedback.descriptor}
+      </div>
+    `;
+  }
+
   if (feedback.strengths && feedback.strengths.length > 0) {
     html += `
       <div class="feedback-section">
@@ -300,7 +321,55 @@ function hideResults() {
   document.getElementById('checkerResults').classList.remove('active');
 }
 
-// ===== Essay Submission =====
+// ===== Suggestion Popup for Alternative Sentences =====
+function showSuggestionPopup(index) {
+  const alt = currentSentenceAlternatives[index];
+  if (!alt) return;
+
+  const overlay = document.getElementById('suggestionPopupOverlay');
+  const body = document.getElementById('suggestionPopupBody');
+
+  let html = '';
+
+  // Original sentence (in red box)
+  html += `<div class="suggestion-label original-label">Original Sentence</div>`;
+  html += `<div class="suggestion-original">${escapeHtml(alt.original)}</div>`;
+
+  // Suggested alternative (in green box) - only if we could generate a correction
+  if (alt.corrected && alt.corrected !== alt.original) {
+    html += `<div class="suggestion-label alternative-label">Suggested Alternative</div>`;
+    html += `<div class="suggestion-alternative">${escapeHtml(alt.corrected)}</div>`;
+  }
+
+  // List of errors found
+  if (alt.errors && alt.errors.length > 0) {
+    html += `<div class="suggestion-errors">`;
+    html += `<strong>Issues found:</strong>`;
+    html += `<ul>`;
+    for (const err of alt.errors) {
+      html += `<li>${escapeHtml(err)}</li>`;
+    }
+    html += `</ul>`;
+    html += `</div>`;
+  }
+
+  body.innerHTML = html;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSuggestionPopup() {
+  document.getElementById('suggestionPopupOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeSuggestionPopupOverlay(event) {
+  if (event.target === event.currentTarget) {
+    closeSuggestionPopup();
+  }
+}
+
+// ===== Essay Submission (via Google Form) =====
 function submitEssay() {
   const text = document.getElementById('essayText').value.trim();
   const name = document.getElementById('studentName').value.trim();
@@ -330,30 +399,98 @@ function submitEssay() {
 
   const words = text.split(/\s+/).filter(w => w.length > 0).length;
 
-  // Save to local storage for rater review
-  const submissions = JSON.parse(localStorage.getItem('essaySubmissions') || '[]');
-  const submission = {
-    id: Date.now(),
-    studentName: name,
-    topic: topic,
-    essay: text,
-    wordCount: words,
-    submittedAt: new Date().toISOString(),
-    status: 'pending_review'
-  };
-  submissions.push(submission);
-  localStorage.setItem('essaySubmissions', JSON.stringify(submissions));
+  // Check if Google Form is configured
+  const formUrl = localStorage.getItem('googleFormUrl');
+  if (!formUrl) {
+    statusEl.className = 'submission-status error';
+    statusEl.innerHTML = `
+      <strong>Submission not available yet.</strong><br>
+      <span style="font-size:0.85rem;">Your teacher has not set up the submission form. Please ask them to configure it in the <a href="#" onclick="navigateTo('settings'); return false;" style="color:var(--primary); text-decoration:underline;">Settings</a> page.</span>
+    `;
+    statusEl.style.display = 'block';
+    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  // Build the pre-filled Google Form URL
+  // Google Forms pre-fill uses: viewform?usp=pp_url&entry.FIELD_ID=VALUE
+  // We use a simpler approach: open the form and copy essay to clipboard
+  try {
+    navigator.clipboard.writeText(text);
+  } catch (e) {
+    // Clipboard may not be available; that's fine
+  }
+
+  // Open Google Form in a new tab
+  window.open(formUrl, '_blank');
 
   statusEl.className = 'submission-status success';
   statusEl.innerHTML = `
-    <strong>Essay submitted successfully!</strong><br>
-    <span style="font-size:0.85rem;">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span><br>
-    <span style="font-size:0.85rem;">Your essay has been saved for rater review. Submission ID: #${submission.id}</span>
+    <strong>Google Form opened in a new tab!</strong><br>
+    <span style="font-size:0.85rem;">Your essay has been copied to your clipboard. Paste it into the form and click Submit.</span><br>
+    <span style="font-size:0.85rem; color: var(--gray-500);">Student: ${escapeHtml(name)} | Topic: ${escapeHtml(topic)} | Words: ${words}</span>
   `;
   statusEl.style.display = 'block';
-
-  // Scroll to status
   statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== Google Form Settings =====
+function saveGoogleFormSettings() {
+  const url = document.getElementById('googleFormUrl').value.trim();
+  const statusEl = document.getElementById('settingsStatus');
+
+  if (!url) {
+    statusEl.className = 'submission-status error';
+    statusEl.textContent = 'Please enter a Google Form URL.';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  // Basic validation
+  if (!url.includes('docs.google.com/forms') && !url.includes('forms.gle')) {
+    statusEl.className = 'submission-status error';
+    statusEl.textContent = 'That does not look like a Google Form URL. It should contain "docs.google.com/forms" or "forms.gle".';
+    statusEl.style.display = 'block';
+    return;
+  }
+
+  localStorage.setItem('googleFormUrl', url);
+
+  statusEl.className = 'submission-status success';
+  statusEl.textContent = 'Google Form URL saved! Students can now submit their essays.';
+  statusEl.style.display = 'block';
+
+  updateFormConfigStatus();
+}
+
+function clearGoogleFormSettings() {
+  localStorage.removeItem('googleFormUrl');
+  document.getElementById('googleFormUrl').value = '';
+  const statusEl = document.getElementById('settingsStatus');
+  statusEl.className = 'submission-status success';
+  statusEl.textContent = 'Google Form URL removed.';
+  statusEl.style.display = 'block';
+  updateFormConfigStatus();
+}
+
+function updateFormConfigStatus() {
+  const statusEl = document.getElementById('formConfigStatus');
+  if (!statusEl) return;
+
+  const url = localStorage.getItem('googleFormUrl');
+  if (url) {
+    statusEl.innerHTML = `<span style="color: var(--success); font-weight: 600;">&#10003; Google Form connected</span><br><span style="font-size:0.8rem; word-break:break-all;">${escapeHtml(url)}</span>`;
+  } else {
+    statusEl.innerHTML = '<span style="color: var(--warning); font-weight: 600;">&#9888; Not configured</span> &mdash; Students cannot submit essays until a Google Form URL is saved.';
+  }
+}
+
+function loadFormSettings() {
+  const url = localStorage.getItem('googleFormUrl');
+  if (url) {
+    document.getElementById('googleFormUrl').value = url;
+  }
+  updateFormConfigStatus();
 }
 
 // ===== Loading Overlay =====
@@ -374,6 +511,25 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ===== Teacher Settings Access (hidden from students) =====
+// Access via Ctrl+Shift+S or by navigating to #settings in the URL
+const TEACHER_PASSWORD = 'teacher2024';
+let settingsUnlocked = false;
+
+function openSettings() {
+  if (settingsUnlocked) {
+    navigateTo('settings');
+    return;
+  }
+  const pwd = prompt('Enter the teacher password to access settings:');
+  if (pwd === TEACHER_PASSWORD) {
+    settingsUnlocked = true;
+    navigateTo('settings');
+  } else if (pwd !== null) {
+    alert('Incorrect password.');
+  }
+}
+
 // ===== Initialisation =====
 document.addEventListener('DOMContentLoaded', function() {
   // Render model essays
@@ -382,9 +538,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // Set up word counter
   updateWordCount();
 
+  // Load form settings
+  loadFormSettings();
+
   // Handle URL hash navigation
   const hash = window.location.hash.replace('#', '');
-  if (hash && document.getElementById(hash)) {
+  if (hash === 'settings') {
+    openSettings();
+  } else if (hash && document.getElementById(hash)) {
     navigateTo(hash);
   }
+
+  // Keyboard shortcut: Ctrl+Shift+S opens settings
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+      e.preventDefault();
+      openSettings();
+    }
+  });
 });
