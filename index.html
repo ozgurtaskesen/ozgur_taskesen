@@ -23,6 +23,7 @@
         <li><a href="#toolkit" data-page="toolkit" onclick="navigateTo('toolkit')">Language Toolkit</a></li>
         <li><a href="#organisation" data-page="organisation" onclick="navigateTo('organisation')">Organisation</a></li>
         <li><a href="#write" data-page="write" onclick="navigateTo('write')">Write &amp; Submit</a></li>
+        <li><a href="#rubric" data-page="rubric" onclick="navigateTo('rubric')">Rating Scale</a></li>
       </ul>
     </div>
   </nav>
@@ -36,25 +37,30 @@
         <h1>Master Opinion Essay Writing</h1>
         <p>A comprehensive platform for CEFR B1+ learners to study, practise, and perfect their opinion essay writing skills with AI-powered feedback.</p>
         <div class="hero-features">
-          <div class="hero-feature">
+          <div class="hero-feature" onclick="navigateTo('essays')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateTo('essays')">
             <div class="icon">&#128214;</div>
             <h3>Model Essays</h3>
             <p>Study well-structured opinion essays at ~300 words</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature" onclick="navigateTo('toolkit')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateTo('toolkit')">
             <div class="icon">&#128295;</div>
             <h3>Language Toolkit</h3>
             <p>Linkers and phrases for 4 key relationship types</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature" onclick="navigateTo('organisation')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateTo('organisation')">
             <div class="icon">&#128202;</div>
             <h3>Organisation Guide</h3>
             <p>Learn acceptable essay structures and conventions</p>
           </div>
-          <div class="hero-feature">
+          <div class="hero-feature" onclick="navigateTo('write')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateTo('write')">
             <div class="icon">&#9997;</div>
             <h3>Write &amp; Get Feedback</h3>
             <p>Submit essays and receive AI-powered analysis and grading</p>
+          </div>
+          <div class="hero-feature" onclick="navigateTo('rubric')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateTo('rubric')">
+            <div class="icon">&#128203;</div>
+            <h3>Rating Scale</h3>
+            <p>View the detailed analytic writing rubric used for scoring</p>
           </div>
         </div>
       </div>
@@ -687,7 +693,8 @@
             </div>
             <div class="quick-ref-section">
               <h5>Grading Criteria (out of 20)</h5>
-              <p>Content: 5 | Organisation: 5 | Grammar: 5 | Vocabulary: 5</p>
+              <p>Grammar: 5 | Vocabulary: 5 | Content: 5 | Organisation: 5</p>
+              <a href="#rubric" onclick="navigateTo('rubric')" style="font-size:0.75rem; color:var(--primary); text-decoration:underline; cursor:pointer;">View full rating scale</a>
             </div>
           </div>
 
@@ -707,24 +714,28 @@
                 <!-- Score Breakdown -->
                 <div class="score-breakdown">
                   <div class="score-item">
-                    <div class="label">Content</div>
-                    <div class="value" id="contentScore">0</div>
-                    <div class="max">/ 5</div>
-                  </div>
-                  <div class="score-item">
-                    <div class="label">Organisation</div>
-                    <div class="value" id="orgScore">0</div>
-                    <div class="max">/ 5</div>
-                  </div>
-                  <div class="score-item">
                     <div class="label">Grammar</div>
                     <div class="value" id="grammarScore">0</div>
                     <div class="max">/ 5</div>
+                    <div class="score-descriptor" id="grammarDesc"></div>
                   </div>
                   <div class="score-item">
                     <div class="label">Vocabulary</div>
                     <div class="value" id="vocabScore">0</div>
                     <div class="max">/ 5</div>
+                    <div class="score-descriptor" id="vocabDesc"></div>
+                  </div>
+                  <div class="score-item">
+                    <div class="label">Content</div>
+                    <div class="value" id="contentScore">0</div>
+                    <div class="max">/ 5</div>
+                    <div class="score-descriptor" id="contentDesc"></div>
+                  </div>
+                  <div class="score-item">
+                    <div class="label">Organisation</div>
+                    <div class="value" id="orgScore">0</div>
+                    <div class="max">/ 5</div>
+                    <div class="score-descriptor" id="orgDesc"></div>
                   </div>
                 </div>
               </div>
@@ -743,20 +754,6 @@
 
             <!-- Detailed Feedback -->
             <div class="feedback-grid" id="feedbackGrid">
-              <div class="card feedback-card content-fb">
-                <div class="card-header">
-                  <h3>Content</h3>
-                  <span class="score-badge" id="contentBadge">0/5</span>
-                </div>
-                <div class="card-body" id="contentFeedback"></div>
-              </div>
-              <div class="card feedback-card org-fb">
-                <div class="card-header">
-                  <h3>Organisation</h3>
-                  <span class="score-badge" id="orgBadge">0/5</span>
-                </div>
-                <div class="card-body" id="orgFeedback"></div>
-              </div>
               <div class="card feedback-card grammar-fb">
                 <div class="card-header">
                   <h3>Grammar</h3>
@@ -771,10 +768,174 @@
                 </div>
                 <div class="card-body" id="vocabFeedback"></div>
               </div>
+              <div class="card feedback-card content-fb">
+                <div class="card-header">
+                  <h3>Content</h3>
+                  <span class="score-badge" id="contentBadge">0/5</span>
+                </div>
+                <div class="card-body" id="contentFeedback"></div>
+              </div>
+              <div class="card feedback-card org-fb">
+                <div class="card-header">
+                  <h3>Organisation</h3>
+                  <span class="score-badge" id="orgBadge">0/5</span>
+                </div>
+                <div class="card-body" id="orgFeedback"></div>
+              </div>
             </div>
 
             <div style="text-align: center; margin-top: 1rem;">
               <button class="btn btn-secondary" onclick="hideResults()">Write Another Essay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RATING SCALE PAGE ===== -->
+    <section id="rubric" class="page-section">
+      <div class="section-header">
+        <h2>Upper-Intermediate CAT Analytic Writing Scale</h2>
+        <p>Total: 20 points. Each of the four categories is scored 0-5. If one dimension within a category is weaker than the other, the lower score applies.</p>
+      </div>
+
+      <div class="rubric-grid">
+        <!-- GRAMMAR -->
+        <div class="card rubric-card rubric-grammar">
+          <div class="card-header">
+            <h3>Grammar</h3>
+            <span class="rubric-max">/ 5</span>
+          </div>
+          <div class="card-body">
+            <p class="rubric-note">Two dimensions: <strong>grammatical accuracy (control)</strong> and <strong>range</strong>. Grade on the lower of the two.</p>
+            <div class="rubric-band band-5">
+              <div class="rubric-score">5</div>
+              <div class="rubric-desc">High degree of grammatical control shown over a wide range of appropriate structures; some complex structures are evident although there may be errors in their use that do not hinder understanding.</div>
+            </div>
+            <div class="rubric-band band-4">
+              <div class="rubric-score">4</div>
+              <div class="rubric-desc">Mostly accurate use of a good range of appropriate structures with some minor errors.</div>
+            </div>
+            <div class="rubric-band band-3">
+              <div class="rubric-score">3</div>
+              <div class="rubric-desc">Sufficiently accurate use of an adequate range of structures with some language errors but meaning is not obscured.</div>
+            </div>
+            <div class="rubric-band band-2">
+              <div class="rubric-score">2</div>
+              <div class="rubric-desc">Inadequate range of structures with some basic language errors which at times may obscure meaning and/or use of language below level expectations.</div>
+            </div>
+            <div class="rubric-band band-1">
+              <div class="rubric-score">1</div>
+              <div class="rubric-desc">Poor range of structures with basic and frequent language errors which often obscure meaning.</div>
+            </div>
+            <div class="rubric-band band-0">
+              <div class="rubric-score">0</div>
+              <div class="rubric-desc">Serious lack of language; inadequate sample for scoring.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOCABULARY -->
+        <div class="card rubric-card rubric-vocab">
+          <div class="card-header">
+            <h3>Vocabulary</h3>
+            <span class="rubric-max">/ 5</span>
+          </div>
+          <div class="card-body">
+            <p class="rubric-note">Two dimensions: <strong>lexical range</strong> and <strong>appropriateness (usage)</strong>. Grade on the lower of the two.</p>
+            <div class="rubric-band band-5">
+              <div class="rubric-score">5</div>
+              <div class="rubric-desc">Wide range of vocabulary used appropriately with almost no instances of misuse (i.e. word choice / word formation) and very few spelling mistakes.</div>
+            </div>
+            <div class="rubric-band band-4">
+              <div class="rubric-score">4</div>
+              <div class="rubric-desc">Good range of vocabulary used mostly appropriately with occasional instances of misuse and few spelling mistakes.</div>
+            </div>
+            <div class="rubric-band band-3">
+              <div class="rubric-score">3</div>
+              <div class="rubric-desc">Sufficient range of vocabulary used fairly appropriately although some errors are apparent and some problems in spelling.</div>
+            </div>
+            <div class="rubric-band band-2">
+              <div class="rubric-score">2</div>
+              <div class="rubric-desc">Inadequate range of vocabulary and/or frequent inappropriate use which at times may obscure meaning, frequent problems in spelling.</div>
+            </div>
+            <div class="rubric-band band-1">
+              <div class="rubric-score">1</div>
+              <div class="rubric-desc">Poor range of vocabulary with serious problems in accuracy and/or usage, major problems with spelling.</div>
+            </div>
+            <div class="rubric-band band-0">
+              <div class="rubric-score">0</div>
+              <div class="rubric-desc">Almost no control of vocabulary; inadequate sample for scoring.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="card rubric-card rubric-content">
+          <div class="card-header">
+            <h3>Content</h3>
+            <span class="rubric-max">/ 5</span>
+          </div>
+          <div class="card-body">
+            <p class="rubric-note">Two dimensions: <strong>relevance of ideas</strong> and <strong>development / justification(s)</strong>. Grade on the lower of the two.</p>
+            <div class="rubric-band band-5">
+              <div class="rubric-score">5</div>
+              <div class="rubric-desc">Very good response to the prompt; a fully developed passage (with respect to exemplification and details) with very good justification (with respect to the quality of ideas).</div>
+            </div>
+            <div class="rubric-band band-4">
+              <div class="rubric-score">4</div>
+              <div class="rubric-desc">Good response to the prompt; a well-developed passage with good justification.</div>
+            </div>
+            <div class="rubric-band band-3">
+              <div class="rubric-score">3</div>
+              <div class="rubric-desc">Adequate response to the prompt; an adequately developed passage with satisfactory justification.</div>
+            </div>
+            <div class="rubric-band band-2">
+              <div class="rubric-score">2</div>
+              <div class="rubric-desc">Attempts to respond to the prompt but inadequately; some development of ideas but with inadequate justification and/or frequent repetition -- content is not always clear and/or partly irrelevant.</div>
+            </div>
+            <div class="rubric-band band-1">
+              <div class="rubric-score">1</div>
+              <div class="rubric-desc">Response is considerably irrelevant; poor development of ideas with little attempt at justification and/or almost completely repetitious and/or incomplete.</div>
+            </div>
+            <div class="rubric-band band-0">
+              <div class="rubric-score">0</div>
+              <div class="rubric-desc">Response is completely irrelevant to the task; almost no attempt at answering the prompt.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ORGANISATION -->
+        <div class="card rubric-card rubric-org">
+          <div class="card-header">
+            <h3>Organisation</h3>
+            <span class="rubric-max">/ 5</span>
+          </div>
+          <div class="card-body">
+            <p class="rubric-note">Two dimensions: <strong>flow (fluency)</strong> and <strong>cohesion</strong>. Grade on the lower of the two.</p>
+            <div class="rubric-band band-5">
+              <div class="rubric-score">5</div>
+              <div class="rubric-desc">Very fluent passage; the text flows in a meaningful and a logical way, all aspects of cohesion managed well (i.e. linkers, referencing).</div>
+            </div>
+            <div class="rubric-band band-4">
+              <div class="rubric-score">4</div>
+              <div class="rubric-desc">Mostly fluent passage; information provided mostly flows in a meaningful and logical way, a range of cohesive devices used appropriately, although there may be some under/over-use.</div>
+            </div>
+            <div class="rubric-band band-3">
+              <div class="rubric-score">3</div>
+              <div class="rubric-desc">Adequately fluent passage; information is ordered meaningfully and logically, cohesive devices used although cohesion within and/or between parts of the text/sentences may be faulty at times.</div>
+            </div>
+            <div class="rubric-band band-2">
+              <div class="rubric-score">2</div>
+              <div class="rubric-desc">Lacks fluency despite some evidence of organisation; "jumpiness" in places; inappropriate, inadequate or overuse of cohesive devices leads to problems with transitions between ideas.</div>
+            </div>
+            <div class="rubric-band band-1">
+              <div class="rubric-score">1</div>
+              <div class="rubric-desc">Almost complete lack of fluency; a limited range of cohesive devices and/or cohesive devices may be inaccurate, repetitive, or may not provide a logical relationship or show a clear transition between ideas.</div>
+            </div>
+            <div class="rubric-band band-0">
+              <div class="rubric-score">0</div>
+              <div class="rubric-desc">Very little or no control of organisational features.</div>
             </div>
           </div>
         </div>

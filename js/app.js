@@ -92,23 +92,94 @@ function openEssay(id) {
   }[essay.type] || '';
 
   body.innerHTML = `
-    <div style="margin-bottom: 1rem;">
+    <div style="margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
       <span class="tag ${tagClass}">${essay.tag}</span>
+      <button class="btn btn-sm" onclick="toggleLinkerHighlight(${essay.id})" id="linkerToggleBtn" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 6px; cursor: pointer;">Show Linkers</button>
     </div>
     ${essay.paragraphs.map((p, i) => {
       const labelClass = i === 0 ? 'intro' : (i === essay.paragraphs.length - 1 ? 'conclusion' : 'body');
+      const paraWordCount = p.text.split(/\s+/).filter(w => w.length > 0).length;
       return `
-        <div class="essay-paragraph">
-          <span class="paragraph-label ${labelClass}">${p.label}</span>
-          <p style="margin-top: 0.5rem; line-height: 1.75;">${p.text}</p>
+        <div class="essay-paragraph" data-paragraph-index="${i}">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="paragraph-label ${labelClass}">${p.label}</span>
+            <span style="font-size: 0.75rem; color: var(--gray-400);">${paraWordCount} words</span>
+          </div>
+          <p class="essay-para-text" style="margin-top: 0.5rem; line-height: 1.75;">${p.text}</p>
         </div>
       `;
     }).join('')}
     <div class="word-count-info">Total word count: ${wordCount} words</div>
   `;
 
+  // Store essay id on modal for linker toggle reference
+  modal.dataset.currentEssayId = id;
+  modal.dataset.linkersActive = 'false';
+
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function toggleLinkerHighlight(essayId) {
+  const modal = document.getElementById('essayModal');
+  const btn = document.getElementById('linkerToggleBtn');
+  const isActive = modal.dataset.linkersActive === 'true';
+
+  if (isActive) {
+    // Remove highlights - restore original text
+    const essay = MODEL_ESSAYS.find(e => e.id === essayId);
+    if (!essay) return;
+    const paraEls = modal.querySelectorAll('.essay-para-text');
+    essay.paragraphs.forEach((p, i) => {
+      if (paraEls[i]) {
+        paraEls[i].innerHTML = p.text;
+      }
+    });
+    modal.dataset.linkersActive = 'false';
+    btn.textContent = 'Show Linkers';
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--primary)';
+  } else {
+    // Add highlights
+    const linkerPhrases = [
+      // Common linking/transition phrases
+      'In conclusion', 'To conclude', 'To sum up', 'In summary', 'All in all',
+      'On the other hand', 'On the contrary', 'In contrast', 'By contrast',
+      'However', 'Nevertheless', 'Nonetheless', 'Although', 'Even though', 'Despite', 'In spite of',
+      'Furthermore', 'Moreover', 'In addition', 'Additionally', 'Besides',
+      'For example', 'For instance', 'Such as', 'In particular', 'Specifically',
+      'As a result', 'Consequently', 'Therefore', 'Thus', 'Hence', 'Accordingly',
+      'First of all', 'Firstly', 'Secondly', 'Thirdly', 'Finally', 'Lastly',
+      'In other words', 'That is to say', 'Namely',
+      'Meanwhile', 'At the same time', 'Similarly', 'Likewise',
+      'Overall', 'In general', 'Generally speaking',
+      'It is widely believed that', 'It is often argued that',
+      'One of the main', 'Another key', 'The primary', 'The main',
+      'Not only', 'but also',
+      'While', 'Whereas',
+      'Due to', 'Because of', 'Owing to',
+      'In my opinion', 'From my perspective', 'I believe that',
+      'To begin with', 'First and foremost'
+    ];
+
+    // Sort by length descending to match longer phrases first
+    const sortedPhrases = linkerPhrases.sort((a, b) => b.length - a.length);
+
+    const paraEls = modal.querySelectorAll('.essay-para-text');
+    paraEls.forEach(paraEl => {
+      let html = paraEl.innerHTML;
+      sortedPhrases.forEach(phrase => {
+        const regex = new RegExp('(?<![\\w>])(' + phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![\\w<])', 'gi');
+        html = html.replace(regex, '<mark class="linker-highlight">$1</mark>');
+      });
+      paraEl.innerHTML = html;
+    });
+
+    modal.dataset.linkersActive = 'true';
+    btn.textContent = 'Hide Linkers';
+    btn.style.background = 'var(--primary)';
+    btn.style.color = '#fff';
+  }
 }
 
 function closeModal() {
@@ -231,44 +302,106 @@ function displayResults(result) {
   document.getElementById('quickRef').style.display = 'none';
   document.getElementById('checkerResults').classList.add('active');
 
-  // Update total score
-  const totalScoreEl = document.getElementById('totalScore');
+  // Update total score with animation
   const scoreCircle = document.getElementById('scoreCircle');
-  totalScoreEl.textContent = scores.total;
-
   scoreCircle.className = 'score-circle';
   if (scores.total >= 16) scoreCircle.classList.add('score-high');
   else if (scores.total >= 10) scoreCircle.classList.add('score-mid');
   else scoreCircle.classList.add('score-low');
 
+  // Animate total score count-up
+  animateScore('totalScore', scores.total, 800);
+
   // Update individual scores
-  document.getElementById('contentScore').textContent = scores.content;
-  document.getElementById('orgScore').textContent = scores.organisation;
   document.getElementById('grammarScore').textContent = scores.grammar;
   document.getElementById('vocabScore').textContent = scores.vocabulary;
+  document.getElementById('contentScore').textContent = scores.content;
+  document.getElementById('orgScore').textContent = scores.organisation;
+
+  // Update score descriptors
+  const scoreKeys = ['grammar', 'vocabulary', 'content', 'organisation'];
+  const descIdMap = {
+    grammar: 'grammarDesc',
+    vocabulary: 'vocabDesc',
+    content: 'contentDesc',
+    organisation: 'orgDesc'
+  };
+
+  scoreKeys.forEach(function(key) {
+    if (scores.descriptors && scores.descriptors[key]) {
+      const desc = scores.descriptors[key];
+      const descEl = document.getElementById(descIdMap[key]);
+      if (descEl) {
+        descEl.textContent = desc.label;
+        descEl.style.color = desc.color;
+        descEl.style.background = desc.color + '15';
+      }
+    }
+  });
 
   // Update badges
-  document.getElementById('contentBadge').textContent = `${scores.content}/5`;
-  document.getElementById('orgBadge').textContent = `${scores.organisation}/5`;
   document.getElementById('grammarBadge').textContent = `${scores.grammar}/5`;
   document.getElementById('vocabBadge').textContent = `${scores.vocabulary}/5`;
+  document.getElementById('contentBadge').textContent = `${scores.content}/5`;
+  document.getElementById('orgBadge').textContent = `${scores.organisation}/5`;
 
   // Display corrected essay
   document.getElementById('correctedEssay').innerHTML = correctedEssay;
 
-  // Display feedback
-  displayFeedback('contentFeedback', feedback.content);
-  displayFeedback('orgFeedback', feedback.organisation);
-  displayFeedback('grammarFeedback', feedback.grammar);
-  displayFeedback('vocabFeedback', feedback.vocabulary);
+  // Display feedback in order: grammar, vocabulary, content, organisation
+  displayFeedback('grammarFeedback', feedback.grammar, scores.rubricBands ? scores.rubricBands.grammar : null);
+  displayFeedback('vocabFeedback', feedback.vocabulary, scores.rubricBands ? scores.rubricBands.vocabulary : null);
+  displayFeedback('contentFeedback', feedback.content, scores.rubricBands ? scores.rubricBands.content : null);
+  displayFeedback('orgFeedback', feedback.organisation, scores.rubricBands ? scores.rubricBands.organisation : null);
 
   // Scroll to results
   document.getElementById('checkerResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function displayFeedback(elementId, feedback) {
+// ===== Score Animation =====
+function animateScore(elementId, targetValue, duration) {
+  duration = duration || 800;
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const startTime = performance.now();
+
+  function easeOutQuad(t) {
+    return t * (2 - t);
+  }
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = easeOutQuad(progress);
+    const currentValue = Math.round(easedProgress * targetValue);
+
+    el.textContent = currentValue;
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = targetValue;
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
+function displayFeedback(elementId, feedback, rubricBand) {
   const el = document.getElementById(elementId);
   let html = '';
+
+  // Add rubric band text at the top if available
+  if (rubricBand) {
+    html += `
+      <div style="font-size:0.8rem; color:var(--gray-500); font-style:italic; margin-bottom:0.75rem; padding:0.5rem; background:var(--gray-50); border-radius:4px;">Band descriptor: ${rubricBand}</div>
+    `;
+  } else if (feedback.rubricBand) {
+    html += `
+      <div style="font-size:0.8rem; color:var(--gray-500); font-style:italic; margin-bottom:0.75rem; padding:0.5rem; background:var(--gray-50); border-radius:4px;">Band descriptor: ${feedback.rubricBand}</div>
+    `;
+  }
 
   if (feedback.strengths && feedback.strengths.length > 0) {
     html += `
@@ -374,6 +507,22 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ===== Phrase Chip Copy Helper =====
+function addCopyInstructionNotes() {
+  document.querySelectorAll('.phrase-category h4').forEach(function(h4) {
+    if (!h4.dataset.copyNoteAdded) {
+      const note = document.createElement('span');
+      note.textContent = ' (Click to copy)';
+      note.style.fontSize = '0.7rem';
+      note.style.color = 'var(--gray-400)';
+      note.style.fontWeight = 'normal';
+      note.style.fontStyle = 'italic';
+      h4.appendChild(note);
+      h4.dataset.copyNoteAdded = 'true';
+    }
+  });
+}
+
 // ===== Initialisation =====
 document.addEventListener('DOMContentLoaded', function() {
   // Render model essays
@@ -387,4 +536,55 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hash && document.getElementById(hash)) {
     navigateTo(hash);
   }
+
+  // Phrase chip click-to-copy setup
+  addCopyInstructionNotes();
+
+  // Event delegation for phrase chip clicks
+  document.addEventListener('click', function(e) {
+    const chip = e.target.closest('.phrase-chip');
+    if (!chip) return;
+
+    const text = chip.textContent.trim();
+
+    // Try modern clipboard API first, with fallback
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        chip.classList.add('copied');
+        setTimeout(function() {
+          chip.classList.remove('copied');
+        }, 1500);
+      }).catch(function() {
+        // Fallback for clipboard API failure
+        fallbackCopyText(text, chip);
+      });
+    } else {
+      // Fallback for non-HTTPS or older browsers
+      fallbackCopyText(text, chip);
+    }
+  });
 });
+
+// Fallback copy method for non-HTTPS environments
+function fallbackCopyText(text, chip) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-9999px';
+  textArea.style.top = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand('copy');
+    chip.classList.add('copied');
+    setTimeout(function() {
+      chip.classList.remove('copied');
+    }, 1500);
+  } catch (err) {
+    console.error('Copy failed:', err);
+  }
+
+  document.body.removeChild(textArea);
+}

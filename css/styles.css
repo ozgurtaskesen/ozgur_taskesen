@@ -24,6 +24,12 @@
   --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-serif: 'Georgia', 'Times New Roman', serif;
+  --content-color: #3b82f6;
+  --org-color: #8b5cf6;
+  --grammar-color: #10b981;
+  --vocab-color: #f59e0b;
+  --radius-lg: 16px;
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.1), 0 8px 10px rgba(0,0,0,0.04);
 }
 
 *, *::before, *::after {
@@ -185,6 +191,23 @@ main {
   border-radius: var(--radius);
   padding: 1.5rem;
   text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.hero-feature:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.25);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.hero-feature:active {
+  transform: scale(0.98);
+}
+
+.hero-feature:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .hero-feature .icon {
@@ -481,12 +504,33 @@ main {
   color: var(--gray-700);
   transition: all 0.2s;
   cursor: default;
+  position: relative;
 }
 
 .phrase-chip:hover {
   background: var(--primary-light);
   border-color: var(--primary);
   color: var(--primary-dark);
+}
+
+.phrase-chip.copied::after {
+  content: 'Copied!';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  animation: fadeOut 1.5s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .example-sentence {
@@ -730,8 +774,8 @@ main {
 }
 
 .score-circle {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -852,6 +896,18 @@ main {
 
 .feedback-card {
   border-left: 4px solid;
+  opacity: 0;
+  animation: fadeSlideIn 0.4s ease forwards;
+}
+
+.feedback-card:nth-child(1) { animation-delay: 0.1s; }
+.feedback-card:nth-child(2) { animation-delay: 0.2s; }
+.feedback-card:nth-child(3) { animation-delay: 0.3s; }
+.feedback-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .feedback-card.content-fb { border-left-color: #3b82f6; }
@@ -1003,6 +1059,109 @@ main {
   line-height: 1.4;
 }
 
+/* ===== Rubric Page Styles ===== */
+.rubric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.rubric-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rubric-max {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gray-400);
+}
+
+.rubric-note {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  margin-bottom: 1rem;
+  font-style: italic;
+  padding: 0.75rem;
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--primary);
+}
+
+.rubric-band {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+  align-items: flex-start;
+  transition: background 0.2s;
+}
+
+.rubric-band:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.rubric-score {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.rubric-desc {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+
+/* Band score circle colors */
+.band-5 .rubric-score { background: #10b981; }
+.band-4 .rubric-score { background: #3b82f6; }
+.band-3 .rubric-score { background: #f59e0b; }
+.band-2 .rubric-score { background: #f97316; }
+.band-1 .rubric-score { background: #ef4444; }
+.band-0 .rubric-score { background: #991b1b; }
+
+/* Band row backgrounds */
+.band-5 { background: #f0fdf4; }
+.band-4 { background: #eff6ff; }
+.band-3 { background: #fffbeb; }
+.band-2 { background: #fff7ed; }
+.band-1 { background: #fef2f2; }
+.band-0 { background: #fef2f2; }
+
+/* Rubric category card left borders */
+.rubric-grammar { border-left: 4px solid #10b981; }
+.rubric-vocab { border-left: 4px solid #f59e0b; }
+.rubric-content { border-left: 4px solid #3b82f6; }
+.rubric-org { border-left: 4px solid #8b5cf6; }
+
+/* ===== Score Descriptor ===== */
+.score-descriptor {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 0.25rem;
+  display: inline-block;
+}
+
+/* ===== Linker Highlight in Model Essays ===== */
+.linker-highlight {
+  background: #fef3c7;
+  border-bottom: 2px solid #f59e0b;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
 /* ===== Footer ===== */
 .footer {
   text-align: center;
@@ -1077,6 +1236,10 @@ main {
   }
 
   .org-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rubric-grid {
     grid-template-columns: 1fr;
   }
 
