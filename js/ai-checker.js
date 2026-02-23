@@ -4,7 +4,7 @@
  *
  * Four subskills scored 0-5 each:
  *   GRAMMAR:      accuracy (control) + range of structures
- *   VOCABULARY:   lexical range + appropriateness (usage) + spelling
+ *   VOCABULARY:   lexical range + appropriateness (usage) including spelling
  *   CONTENT:      relevance of ideas + development / justification
  *   ORGANISATION: flow (fluency) + cohesion
  *
@@ -29,28 +29,28 @@ const AIChecker = {
       0: "Serious lack of language; inadequate sample for scoring."
     },
     vocabulary: {
-      5: "Wide range of vocabulary used appropriately with almost no instances of misuse (word choice / word formation) and very few spelling mistakes.",
+      5: "Wide range of vocabulary used appropriately with almost no instances of misuse (i.e. word choice / word formation) and very few spelling mistakes.",
       4: "Good range of vocabulary used mostly appropriately with occasional instances of misuse and few spelling mistakes.",
       3: "Sufficient range of vocabulary used fairly appropriately although some errors are apparent and some problems in spelling.",
-      2: "Inadequate range of vocabulary and/or frequent inappropriate use which at times may obscure meaning; frequent problems in spelling.",
-      1: "Poor range of vocabulary with serious problems in accuracy and/or usage; major problems with spelling.",
+      2: "Inadequate range of vocabulary and/or frequent inappropriate use which at times may obscure meaning, frequent problems in spelling.",
+      1: "Poor range of vocabulary with serious problems in accuracy and/or usage, major problems with spelling.",
       0: "Almost no control of vocabulary; inadequate sample for scoring."
     },
     content: {
       5: "Very good response to the prompt; a fully developed passage (with respect to exemplification and details) with very good justification (with respect to the quality of ideas).",
       4: "Good response to the prompt; a well-developed passage with good justification.",
       3: "Adequate response to the prompt; an adequately developed passage with satisfactory justification.",
-      2: "Attempts to respond to the prompt but inadequately; some development of ideas but with inadequate justification and/or frequent repetition \u2014 content is not always clear and/or partly irrelevant.",
+      2: "Attempts to respond to the prompt but inadequately; some development of ideas but with inadequate justification and/or frequent repetition - content is not always clear and/or partly irrelevant.",
       1: "Response is considerably irrelevant; poor development of ideas with little attempt at justification and/or almost completely repetitious and/or incomplete.",
       0: "Response is completely irrelevant to the task; almost no attempt at answering the prompt."
     },
     organisation: {
-      5: "Very fluent passage; the text flows in a meaningful and a logical way; all aspects of cohesion managed well (linkers, referencing, punctuation).",
-      4: "Mostly fluent passage; information provided mostly flows in a meaningful and logical way; a range of cohesive devices used appropriately, although there may be some under/over-use.",
-      3: "Adequately fluent passage; information is ordered meaningfully and logically; cohesive devices used although cohesion within and/or between parts of the text may be faulty at times.",
-      2: "Lacks fluency despite some evidence of organisation; \u201cjumpiness\u201d in places; inappropriate, inadequate, or overuse of cohesive devices leads to problems with transitions between ideas.",
+      5: "Very fluent passage; the text flows in a meaningful and a logical way, all aspects of cohesion managed well (i.e. linkers, referencing).",
+      4: "Mostly fluent passage; information provided mostly flows in a meaningful and logical way, a range of cohesive devices used appropriately, although there may be some under/over-use.",
+      3: "Adequately fluent passage; information is ordered meaningfully and logically, cohesive devices used although cohesion within and/or between parts of the text/sentences may be faulty at times.",
+      2: "Lacks fluency despite some evidence of organization; \u201cjumpiness\u201d in places; inappropriate, inadequate or overuse of cohesive devices leads to problems with transitions between ideas.",
       1: "Almost complete lack of fluency; a limited range of cohesive devices and/or cohesive devices may be inaccurate, repetitive, or may not provide a logical relationship or show a clear transition between ideas.",
-      0: "Very little or no control of organisational features."
+      0: "Very little or no control of organizational features."
     }
   },
 
@@ -282,7 +282,9 @@ const AIChecker = {
 
     // Perform all four analyses
     const grammarResult = this.analyseGrammar(text, sentences, words);
-    const vocabResult = this.analyseVocabulary(text, words);
+    // Pass spelling error count to vocabulary (rubric puts spelling under Vocabulary)
+    const spellingErrorCount = grammarResult.errors.filter(e => e.type === "spelling").length;
+    const vocabResult = this.analyseVocabulary(text, words, spellingErrorCount);
     const contentResult = this.analyseContent(text, paragraphs, wordCount, topicText, sentences);
     const orgResult = this.analyseOrganisation(text, paragraphs, wordCount, sentences);
 
@@ -475,11 +477,11 @@ const AIChecker = {
     }
 
     if (score <= 2 && accuracyBand <= 2) {
-      feedback.improvements.push("There are basic language errors which at times may obscure meaning. Focus on accuracy in subject-verb agreement, articles, and prepositions.");
+      feedback.improvements.push("There are some basic language errors which at times may obscure meaning and/or use of language is below level expectations. Focus on accuracy in subject-verb agreement, articles, and prepositions.");
     }
 
     if (score <= 1 && accuracyBand <= 1) {
-      feedback.improvements.push("Basic and frequent language errors often obscure meaning. Careful proofreading and revision of fundamental grammar rules is needed.");
+      feedback.improvements.push("Basic and frequent language errors which often obscure meaning. Careful proofreading and revision of fundamental grammar rules is needed.");
     }
 
     if (rangeBand <= 2) {
@@ -513,7 +515,8 @@ const AIChecker = {
   // Dimensions: (1) lexical range  (2) appropriateness / usage + spelling
   // Score = min(range_band, appropriateness_band) per rubric NB
   // =====================================================================
-  analyseVocabulary(text, words) {
+  analyseVocabulary(text, words, spellingErrorCount) {
+    spellingErrorCount = spellingErrorCount || 0;
     const lowerText = text.toLowerCase();
     const lowerWords = words.map(w => w.toLowerCase().replace(/[^a-z'-]/g, ''));
 
@@ -564,19 +567,19 @@ const AIChecker = {
     }
 
     // ----- Dimension 2: APPROPRIATENESS / USAGE + SPELLING -----
-    // Approximate misuse: heavy reliance on basic words, repetition, low TTR as proxy
+    // Per rubric: this dimension covers word choice, word formation, AND spelling
     const basicRatio = totalBasicUses / Math.max(words.length, 1);
     let appropriatenessBand;
-    if (basicRatio < 0.03 && overusedBasic.length === 0 && overusedWords.length === 0) {
-      appropriatenessBand = 5; // almost no misuse
-    } else if (basicRatio < 0.06 && overusedBasic.length <= 1 && overusedWords.length <= 1) {
-      appropriatenessBand = 4; // occasional misuse
-    } else if (basicRatio < 0.10 && overusedBasic.length <= 2) {
-      appropriatenessBand = 3; // some errors apparent
-    } else if (basicRatio < 0.15 || overusedBasic.length <= 4) {
-      appropriatenessBand = 2; // frequent inappropriate use
+    if (basicRatio < 0.03 && overusedBasic.length === 0 && overusedWords.length === 0 && spellingErrorCount <= 1) {
+      appropriatenessBand = 5; // almost no misuse, very few spelling mistakes
+    } else if (basicRatio < 0.06 && overusedBasic.length <= 1 && overusedWords.length <= 1 && spellingErrorCount <= 3) {
+      appropriatenessBand = 4; // occasional misuse, few spelling mistakes
+    } else if (basicRatio < 0.10 && overusedBasic.length <= 2 && spellingErrorCount <= 6) {
+      appropriatenessBand = 3; // some errors apparent, some problems in spelling
+    } else if ((basicRatio < 0.15 || overusedBasic.length <= 4) && spellingErrorCount <= 10) {
+      appropriatenessBand = 2; // frequent inappropriate use, frequent problems in spelling
     } else {
-      appropriatenessBand = 1; // serious problems
+      appropriatenessBand = 1; // serious problems in accuracy/usage, major problems with spelling
     }
 
     if (words.length < 20) appropriatenessBand = 0;
@@ -589,14 +592,14 @@ const AIChecker = {
 
     // Strengths based on score (aligned with scale descriptors)
     if (score >= 5) {
-      feedback.strengths.push("Wide range of vocabulary used appropriately with almost no instances of misuse.");
+      feedback.strengths.push("Wide range of vocabulary used appropriately with almost no instances of misuse (i.e. word choice / word formation) and very few spelling mistakes.");
       if (usedAdvanced.length > 0) {
         feedback.strengths.push(`Upper-intermediate vocabulary used effectively (e.g. ${usedAdvanced.slice(0, 4).join(", ")}).`);
       }
     } else if (score === 4) {
-      feedback.strengths.push(`Good range of vocabulary used mostly appropriately with occasional instances of misuse (${usedAdvanced.length} upper-intermediate words/phrases detected).`);
+      feedback.strengths.push(`Good range of vocabulary used mostly appropriately with occasional instances of misuse and few spelling mistakes (${usedAdvanced.length} upper-intermediate words/phrases detected).`);
     } else if (score === 3) {
-      feedback.strengths.push(`Sufficient range of vocabulary used fairly appropriately (${usedAdvanced.length} upper-intermediate words/phrases used), although some errors are apparent.`);
+      feedback.strengths.push(`Sufficient range of vocabulary used fairly appropriately (${usedAdvanced.length} upper-intermediate words/phrases used), although some errors are apparent and some problems in spelling.`);
     }
 
     if (ttr >= 0.55) {
@@ -609,7 +612,11 @@ const AIChecker = {
     }
 
     if (score <= 1) {
-      feedback.improvements.push("There are serious problems in vocabulary accuracy and/or usage. Focus on learning and correctly using topic-appropriate vocabulary at B1+/B2 level.");
+      feedback.improvements.push("Poor range of vocabulary with serious problems in accuracy and/or usage, major problems with spelling. Focus on learning and correctly using topic-appropriate vocabulary at B1+/B2 level.");
+    }
+
+    if (spellingErrorCount > 3 && score >= 2) {
+      feedback.improvements.push(`${spellingErrorCount} spelling mistake(s) detected. Careful proofreading is needed to reduce problems in spelling.`);
     }
 
     if (overusedBasic.length > 0) {
@@ -786,7 +793,7 @@ const AIChecker = {
 
     // Improvements based on score (aligned with scale descriptors)
     if (score <= 2 && developmentBand <= 2) {
-      feedback.improvements.push("There is some development of ideas but with inadequate justification. Strengthen your arguments with concrete examples, explanations, and evidence.");
+      feedback.improvements.push("Some development of ideas but with inadequate justification and/or frequent repetition. Strengthen your arguments with concrete examples, explanations, and evidence.");
     }
 
     if (score <= 2 && relevanceBand <= 2) {
@@ -794,7 +801,7 @@ const AIChecker = {
     }
 
     if (score <= 1 && developmentBand <= 1) {
-      feedback.improvements.push("Poor development of ideas with little attempt at justification. The passage may be almost completely repetitious and/or incomplete.");
+      feedback.improvements.push("Poor development of ideas with little attempt at justification and/or almost completely repetitious and/or incomplete.");
     }
 
     if (repetitionCount >= 2) {
@@ -960,14 +967,14 @@ const AIChecker = {
 
     // Strengths based on score (aligned with scale descriptors)
     if (score >= 5) {
-      feedback.strengths.push("Very fluent passage; the text flows in a meaningful and logical way.");
-      feedback.strengths.push(`All aspects of cohesion managed well (${totalDeviceCount} cohesive devices across ${deviceCategories.size} categories: ${[...deviceCategories].slice(0, 4).join(", ")}; linkers, referencing, and punctuation).`);
+      feedback.strengths.push("Very fluent passage; the text flows in a meaningful and a logical way.");
+      feedback.strengths.push(`All aspects of cohesion managed well (${totalDeviceCount} cohesive devices across ${deviceCategories.size} categories: ${[...deviceCategories].slice(0, 4).join(", ")}; i.e. linkers, referencing).`);
     } else if (score === 4) {
       feedback.strengths.push("Mostly fluent passage; information provided mostly flows in a meaningful and logical way.");
       feedback.strengths.push(`A range of cohesive devices used appropriately (${totalDeviceCount} devices across ${deviceCategories.size} categories), although there may be some under/over-use.`);
     } else if (score === 3) {
       feedback.strengths.push("Adequately fluent passage; information is ordered meaningfully and logically.");
-      feedback.strengths.push("Cohesive devices are used, although cohesion within and/or between parts of the text may be faulty at times.");
+      feedback.strengths.push("Cohesive devices used, although cohesion within and/or between parts of the text/sentences may be faulty at times.");
     }
 
     if (hasFourParagraphs) {
@@ -988,11 +995,11 @@ const AIChecker = {
 
     // Improvements based on score (aligned with scale descriptors)
     if (score <= 2 && flowBand <= 2) {
-      feedback.improvements.push("The passage lacks fluency despite some evidence of organisation. There is \"jumpiness\" in places \u2014 ensure ideas progress logically from one to the next.");
+      feedback.improvements.push("The passage lacks fluency despite some evidence of organization; there is \"jumpiness\" in places. Ensure ideas progress logically from one to the next.");
     }
 
     if (score <= 2 && cohesionBand <= 2) {
-      feedback.improvements.push("Inappropriate, inadequate, or overuse of cohesive devices leads to problems with transitions between ideas. Use a wider variety of linkers (addition, contrast, cause/effect, exemplification, conclusion).");
+      feedback.improvements.push("Inappropriate, inadequate or overuse of cohesive devices leads to problems with transitions between ideas. Use a wider variety of linkers (addition, contrast, cause/effect, exemplification, conclusion).");
     }
 
     if (score <= 1 && flowBand <= 1) {
@@ -1000,7 +1007,7 @@ const AIChecker = {
     }
 
     if (score <= 1 && cohesionBand <= 1) {
-      feedback.improvements.push("The limited range of cohesive devices does not provide a logical relationship or show a clear transition between ideas.");
+      feedback.improvements.push("A limited range of cohesive devices and/or cohesive devices may be inaccurate, repetitive, or may not provide a logical relationship or show a clear transition between ideas.");
     }
 
     for (const issue of issues) {
@@ -1013,7 +1020,7 @@ const AIChecker = {
       feedback.strengths.push("There is some evidence of an attempt to organise the essay.");
     }
     if (feedback.improvements.length === 0) {
-      feedback.improvements.push("Continue developing your use of cohesive devices (linkers, referencing, punctuation) and paragraph organisation to achieve greater fluency.");
+      feedback.improvements.push("Continue developing your use of cohesive devices (linkers, referencing) and paragraph organization to achieve greater fluency.");
     }
 
     return { score, issues, feedback, flowBand, cohesionBand };
