@@ -259,11 +259,25 @@ function displayResults(result) {
   document.getElementById('grammarScore').textContent = scores.grammar;
   document.getElementById('vocabScore').textContent = scores.vocabulary;
 
-  // Update badges
-  document.getElementById('contentBadge').textContent = `${scores.content}/5`;
-  document.getElementById('orgBadge').textContent = `${scores.organisation}/5`;
-  document.getElementById('grammarBadge').textContent = `${scores.grammar}/5`;
-  document.getElementById('vocabBadge').textContent = `${scores.vocabulary}/5`;
+  // Update badges with color classes
+  const badgeMap = [
+    { id: 'contentBadge', score: scores.content },
+    { id: 'orgBadge', score: scores.organisation },
+    { id: 'grammarBadge', score: scores.grammar },
+    { id: 'vocabBadge', score: scores.vocabulary }
+  ];
+  for (const b of badgeMap) {
+    const el = document.getElementById(b.id);
+    el.textContent = `${b.score}/5`;
+    el.className = 'score-badge';
+    if (b.score >= 4) el.classList.add('badge-green');
+    else if (b.score === 3) el.classList.add('badge-yellow');
+    else el.classList.add('badge-red');
+  }
+
+  // Show Rating Scale reference link
+  const scaleRef = document.getElementById('ratingScaleRef');
+  if (scaleRef) scaleRef.style.display = 'block';
 
   // Display corrected essay
   document.getElementById('correctedEssay').innerHTML = correctedEssay;
@@ -282,11 +296,25 @@ function displayFeedback(elementId, feedback) {
   const el = document.getElementById(elementId);
   let html = '';
 
-  // Show the rubric scale descriptor for the awarded grade
+  // Show the rubric scale descriptor for the awarded grade, color-coded and linked to Rating Scale page
   if (feedback.descriptor) {
+    const score = feedback.score !== undefined ? feedback.score : null;
+    let bandClass = 'descriptor-band-red';
+    if (score >= 4) bandClass = 'descriptor-band-green';
+    else if (score === 3) bandClass = 'descriptor-band-yellow';
+
+    const categoryLabel = feedback.category
+      ? feedback.category.charAt(0).toUpperCase() + feedback.category.slice(1)
+      : '';
+
     html += `
-      <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--gray-600); line-height: 1.5;">
-        <strong style="color: var(--gray-700);">Scale Descriptor:</strong> ${feedback.descriptor}
+      <div class="descriptor-box ${bandClass}">
+        <div class="descriptor-header">
+          <span class="descriptor-score-badge">${score !== null ? score : '?'}/5</span>
+          <span class="descriptor-title">Rating Scale &mdash; Band ${score !== null ? score : '?'}</span>
+        </div>
+        <div class="descriptor-text">${feedback.descriptor}</div>
+        <a href="#" class="descriptor-link" onclick="navigateTo('rating'); return false;">View full ${categoryLabel} Rating Scale &rarr;</a>
       </div>
     `;
   }
@@ -319,6 +347,8 @@ function displayFeedback(elementId, feedback) {
 function hideResults() {
   document.getElementById('quickRef').style.display = 'block';
   document.getElementById('checkerResults').classList.remove('active');
+  const scaleRef = document.getElementById('ratingScaleRef');
+  if (scaleRef) scaleRef.style.display = 'none';
 }
 
 // ===== Suggestion Popup for Alternative Sentences =====

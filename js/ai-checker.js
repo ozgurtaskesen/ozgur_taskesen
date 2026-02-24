@@ -327,10 +327,24 @@ const AIChecker = {
   // ===== Build feedback object with the rubric descriptor prepended =====
   buildFeedbackWithDescriptor(category, score, rawFeedback) {
     const descriptor = this.scaleDescriptors[category][score];
+
+    // Add a reference to the Rating Scale page so students know what to aim for
+    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+    const nextBand = Math.min(score + 1, 5);
+    const improvements = [...rawFeedback.improvements];
+    if (score < 5) {
+      const nextDescriptor = this.scaleDescriptors[category][nextBand];
+      improvements.push(
+        `To move from Band ${score} to Band ${nextBand}, aim for: "${nextDescriptor}" (See the Rating Scale page for all band descriptors.)`
+      );
+    }
+
     return {
+      score: score,
+      category: category,
       descriptor: descriptor,
       strengths: rawFeedback.strengths,
-      improvements: rawFeedback.improvements
+      improvements: improvements
     };
   },
 
